@@ -74,9 +74,9 @@ GÖREVLERİN:
    - "DEYIM:", "ALTERNATIF:", "ORNEKLER:" alanlarına YOK yaz.
 
 3. EĞER GİRDİ NORMAL İNGİLİZCE İSE:
-   - "FONETİK:" alanına Türkçe okunuşu yaz.
-   - "ANLAM:" alanına girdideki tüm cümlelerin TAM, EKSİKSİZ ve BİREBİR Türkçe çevirisini yaz.
-   - "SES_TR:" alanına Türkçe seslendirme metnini yaz.
+   - "FONETİK:" alanına İngilizce metnin okunuşunu yaz.
+   - "ANLAM:" alanına girdideki metnin TAM, EKSİKSİZ ve DOĞAL Türkçe çevirisini yaz.
+   - "SES_TR:" alanına KESİNLİKLE VE SADECE Türkçe çevirinin metnini yaz (Örn: "Ghost Translator" için SES_TR: Hayalet Çevirmen yaz. Asla İngilizce orijinali veya okunuşu yazma!).
    - "RECETE:" YOK yaz.
    - "DIL:" alanına EN yaz.
    - "DEYIM:" Metinde bir deyim (idiom) veya kalıp fiil (phrasal verb) varsa, o kalıbı ve Türkçe mecazi anlamını yaz (Örn: "Bite the bullet: Zor bir duruma katlanmak / Dişini sıkmak"). Yoksa YOK yaz.
@@ -98,7 +98,7 @@ DIL: <EN veya TR>
 FONETİK: <fonetik_okunus>
 ANLAM: <tam_ceviri>
 RECETE: <hata_cozum_recetesi_veya_YOK>
-SES_TR: <sesli_okuma_metni>
+SES_TR: <sesli_okunacak_hedef_ceviri>
 DEYIM: <deyim_veya_YOK>
 ALTERNATIF: <alternatifler_veya_YOK>
 ORNEKLER: <ornek_cumleler_veya_YOK>
@@ -132,7 +132,12 @@ ORNEKLER: <ornek_cumleler_veya_YOK>
             phonetic = phonetic_match.group(1).strip() if phonetic_match else ""
             meaning = meaning_match.group(1).strip() if meaning_match else response_text
             recipe = recipe_match.group(1).strip() if recipe_match and "YOK" not in recipe_match.group(1).upper() else ""
-            speech_tr = speech_match.group(1).strip() if speech_match else meaning
+            
+            # Hedef Seslendirme: Girdi EN ise daima Türkçe Çeviriyi (meaning) al
+            if detected_lang == "EN":
+                speech_tr = meaning
+            else:
+                speech_tr = meaning if meaning else (speech_match.group(1).strip() if speech_match else text)
 
             idiom_raw = idiom_match.group(1).strip() if idiom_match else ""
             idiom = idiom_raw if idiom_raw and "YOK" not in idiom_raw.upper() else ""
