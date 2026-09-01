@@ -67,10 +67,25 @@ class TTSEngine:
         await communicate.save(output_file)
         return output_file
 
+    def _clean_speech_text(self, text):
+        if not text:
+            return ""
+        # 1. Unicode Emojileri ve piktogramları tamamen temizle
+        emoji_pattern = re.compile(
+            r'[\U00010000-\U0010ffff\u2600-\u27BF\u2300-\u23FF\u2B50\u2B55\u200d\uFE0F\u20E3\u2190-\u21FF\u2900-\u297F]+',
+            flags=re.UNICODE
+        )
+        clean = emoji_pattern.sub(' ', text)
+
+        # 2. Markdown ve dekoratif sembolleri temizle
+        clean = re.sub(r'[*_#`"\'\[\](){}~<>=|\\]+', ' ', clean)
+        clean = re.sub(r'[\r\n\t]+', ' ', clean)
+        clean = re.sub(r'\s+', ' ', clean).strip()
+        return clean
+
     def _get_audio_file(self, text, voice, rate="+0%"):
-        # Metni temizle
-        clean_text = re.sub(r'[\r\n\t]+', ' ', text)
-        clean_text = re.sub(r'[*_#`"\'\[\]]+', '', clean_text).strip()
+        # Metni emojilerden ve sembollerden arındır
+        clean_text = self._clean_speech_text(text)
         if not clean_text:
             return None
 
