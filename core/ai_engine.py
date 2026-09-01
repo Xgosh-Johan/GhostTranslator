@@ -193,23 +193,28 @@ ORNEKLER: <ornek_cumleler_veya_YOK>
             img_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
 
             prompt = """
-Sen oyun (Metin2 vb.) ve yazılım ekranlarını okuyan uzman bir OCR asistanısın.
-Görseldeki metni dikkatle oku ve analiz et.
+Sen oyun (Metin2 vb.) ve yazılım ekranlarını okuyan uzman bir OCR ve çeviri asistanısın.
+Görseldeki metni dikkatle oku ve analiz et:
 
-1. Görselde gördüğün metni "ORIJINAL:" alanına yaz.
+1. Görseldeki metnin tamamını "ORIJINAL:" alanına yaz.
 2. Girdi dilini "DIL:" alanına EN veya TR olarak belirt.
-3. İngilizce kelimenin okunuşunu "FONETİK:" alanına yaz.
-4. Türkçe çevirisini ve anlamını "ANLAM:" alanına yaz.
-5. Eğer metin bir hata veya syserr ise "RECETE:" alanına çözümünü yaz.
-6. "SES_TR:" alanına KESİNLİKLE VE SADECE Türkçe çevirinin seslendirmesini yaz (Örn: Görselde "LOGIN ID" yazıyorsa SES_TR: Giriş Kimliği yaz. Asla İngilizce orijinalini yazma!).
+3. EĞER GİRDİ İNGİLİZCE İSE:
+   - "ANLAM:" alanına tam Türkçe çevirisini yaz.
+   - "SES_TR:" alanına seslendirilecek net Türkçe çeviriyi yaz.
+   - "FONETİK:" alanına İngilizce orijinalin okunuşunu yaz.
+4. EĞER GİRDİ TÜRKÇE İSE:
+   - "ANLAM:" alanına tam İngilizce çevirisini yaz.
+   - "SES_TR:" alanına seslendirilecek net İngilizce çeviriyi yaz.
+   - "FONETİK:" alanına İngilizce çevirinin okunuşunu yaz.
+5. Eğer metin bir hata veya syserr ise "RECETE:" alanına çözümünü yaz, yoksa YOK yaz.
 
 Format:
 ORIJINAL: <gorseldeki_yazi>
 DIL: <EN veya TR>
 FONETİK: <fonetik_okunus>
-ANLAM: <turkce_ceviri>
+ANLAM: <hedef_dilde_ceviri>
 RECETE: <cozum_recetesi_veya_YOK>
-SES_TR: <turkce_seslendirme_metni>
+SES_TR: <seslendirilecek_hedef_ceviri>
 """
             models = ["gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-flash-latest"]
             for model_name in models:
