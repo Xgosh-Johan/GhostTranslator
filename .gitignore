@@ -1,0 +1,28 @@
+# Kişisel API Anahtarları ve Hassas Veriler
+config.json
+.env
+
+# Veritabanı ve Çalışma Logları
+*.db
+*.db-journal
+syserr.txt
+*.log
+Gecmis_Arsivi/
+
+# Python Önbellek Dosyaları
+__pycache__/
+*.py[cod]
+*$py.class
+*.spec
+
+# Geçici Medya ve Ses Dosyaları
+*.mp3
+*.wav
+temp/
+scratch/
+
+# IDE ve İşletim Sistemi Dosyaları
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

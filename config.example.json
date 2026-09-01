@@ -1,0 +1,37 @@
+{
+  "api": {
+    "gemini_api_key": "",
+    "gemini_model": "gemini-flash-lite-latest"
+  },
+  "hotkeys": {
+    "listen": "f8",
+    "chat": "f9",
+    "ocr": "ctrl+shift+s",
+    "gui": "ctrl+shift+o"
+  },
+  "tts": {
+    "engine": "edge-tts",
+    "voice_en": "en-US-GuyNeural",
+    "voice_tr": "tr-TR-AhmetNeural",
+    "rate_en": "+0%",
+    "rate_tr": "+10%",
+    "pyttsx3_rate": 180,
+    "pause_between_sec": 0.25,
+    "speak_english": false,
+    "speak_turkish": true
+  },
+  "hud": {
+    "enabled": true,
+    "position": "cursor"
+  },
+  "features": {
+    "auto_start": false,
+    "start_silent": true,
+    "code_doctor": true,
+    "chat_multi_style": false
+  },
+  "ui": {
+    "dark_mode": true,
+    "start_minimized": true
+  }
+}
