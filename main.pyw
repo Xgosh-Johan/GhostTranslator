@@ -288,8 +288,9 @@ class GhostTranslatorService:
                 target = meaning if meaning else source_text
                 tts_engine.speak_single(target, lang="en")
             else:
-                target = speech_tr if speech_tr else meaning
-                tts_engine.speak_single(target, lang="tr")
+                clean_target = speech_tr if (speech_tr and speech_tr.lower() != source_text.lower()) else meaning
+                clean_target = re.sub(r'[/\\()\[\]]+', ', ', clean_target).strip()
+                tts_engine.speak_single(clean_target, lang="tr")
 
         threading.Thread(target=_worker, daemon=True).start()
 

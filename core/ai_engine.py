@@ -193,20 +193,23 @@ ORNEKLER: <ornek_cumleler_veya_YOK>
             img_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
 
             prompt = """
-Sen oyun (Metin2 vb.) ve geliştirici ekranlarını okuyan uzman bir OCR ve hata analiz asistanısın.
-Bu görseldeki metni dikkatle oku.
-1. Görselde gördüğün orijinal metnin TAMAMINI "ORIJINAL:" alanına yaz.
+Sen oyun (Metin2 vb.) ve yazılım ekranlarını okuyan uzman bir OCR asistanısın.
+Görseldeki metni dikkatle oku ve analiz et.
+
+1. Görselde gördüğün metni "ORIJINAL:" alanına yaz.
 2. Girdi dilini "DIL:" alanına EN veya TR olarak belirt.
-3. Eğer metin bir hata veya syserr ise "RECETE:" alanına çözüm önerisini yaz.
-4. Tüm metnin TAM ve EKSİKSİZ çevirisini "ANLAM:" ve "SES_TR:" alanına yaz.
+3. İngilizce kelimenin okunuşunu "FONETİK:" alanına yaz.
+4. Türkçe çevirisini ve anlamını "ANLAM:" alanına yaz.
+5. Eğer metin bir hata veya syserr ise "RECETE:" alanına çözümünü yaz.
+6. "SES_TR:" alanına KESİNLİKLE VE SADECE Türkçe çevirinin seslendirmesini yaz (Örn: Görselde "LOGIN ID" yazıyorsa SES_TR: Giriş Kimliği yaz. Asla İngilizce orijinalini yazma!).
 
 Format:
-ORIJINAL: <gorseldeki_tum_yazi>
+ORIJINAL: <gorseldeki_yazi>
 DIL: <EN veya TR>
-FONETİK: <fonetik>
-ANLAM: <tam_eksiksiz_ceviri>
-RECETE: <hata_cozum_recetesi_veya_YOK>
-SES_TR: <tam_sesli_okuma>
+FONETİK: <fonetik_okunus>
+ANLAM: <turkce_ceviri>
+RECETE: <cozum_recetesi_veya_YOK>
+SES_TR: <turkce_seslendirme_metni>
 """
             models = ["gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-flash-latest"]
             for model_name in models:
@@ -247,6 +250,10 @@ SES_TR: <tam_sesli_okuma>
                                 meaning = mean_m.group(1).strip() if mean_m else resp
                                 recipe = rec_m.group(1).strip() if rec_m and "YOK" not in rec_m.group(1).upper() else ""
                                 speech_tr = speech_m.group(1).strip() if speech_m else meaning
+
+                                # Güvenlik: Eğer speech_tr yanlışlıkla orijinal İngilizce kaldıysa meaning'e eşitle
+                                if speech_tr.lower() == orig.lower() and detected_lang == "EN":
+                                    speech_tr = meaning
 
                                 return {
                                     "source_text": orig,
