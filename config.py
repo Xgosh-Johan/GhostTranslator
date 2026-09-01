@@ -108,24 +108,43 @@ class ConfigManager:
     @staticmethod
     def set_windows_autostart(enable=True):
         try:
+            # 1. Yöntem: Windows Registry (Kayıt Defteri)
             key = winreg.OpenKey(
                 winreg.HKEY_CURRENT_USER,
                 r"Software\Microsoft\Windows\CurrentVersion\Run",
                 0, winreg.KEY_SET_VALUE
             )
             if enable:
-                pythonw_path = sys.executable.replace("python.exe", "pythonw.exe")
+                python_dir = Path(sys.executable).parent
+                pythonw_candidate = python_dir / "pythonw.exe"
+                pythonw_path = str(pythonw_candidate) if pythonw_candidate.exists() else sys.executable
                 main_script = str(BASE_DIR / "main.pyw")
                 cmd = f'"{pythonw_path}" "{main_script}"'
                 winreg.SetValueEx(key, "GhostTranslator", 0, winreg.REG_SZ, cmd)
-                print(f"[Config] Windows Başlangıcına Eklendi: {cmd}")
+                print(f"[Config] Windows Başlangıcına Eklendi (Registry): {cmd}")
             else:
                 try:
                     winreg.DeleteValue(key, "GhostTranslator")
-                    print("[Config] Windows Başlangıcından Kaldırıldı")
+                    print("[Config] Windows Başlangıcından Kaldırıldı (Registry)")
                 except FileNotFoundError:
                     pass
             winreg.CloseKey(key)
+
+            # 2. Yöntem: Windows Başlangıç Klasörü Garantisi (shell:startup)
+            appdata = os.environ.get("APPDATA", "")
+            if appdata:
+                startup_dir = Path(appdata) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
+                if startup_dir.exists():
+                    bat_file = startup_dir / "GhostTranslator_Autostart.bat"
+                    if enable:
+                        with open(bat_file, "w", encoding="utf-8") as f:
+                            f.write(f'@echo off\ncd /d "{BASE_DIR}"\nstart pythonw main.pyw\nexit\n')
+                        print(f"[Config] Windows Başlangıç Klasörüne Eklendi: {bat_file}")
+                    else:
+                        if bat_file.exists():
+                            bat_file.unlink()
+                            print(f"[Config] Windows Başlangıç Klasöründen Silindi: {bat_file}")
+
             return True
         except Exception as e:
             print(f"[Config] Windows başlangıç kayıt hatası: {e}")
