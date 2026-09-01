@@ -285,9 +285,11 @@ class GhostTranslatorService:
             self.signals.refresh_history_signal.emit()
 
             if detected_lang == "TR":
-                tts_engine.speak_single(speech_tr, lang="en")
+                target = meaning if meaning else source_text
+                tts_engine.speak_single(target, lang="en")
             else:
-                tts_engine.speak_single(speech_tr, lang="tr")
+                target = speech_tr if speech_tr else meaning
+                tts_engine.speak_single(target, lang="tr")
 
         threading.Thread(target=_worker, daemon=True).start()
 

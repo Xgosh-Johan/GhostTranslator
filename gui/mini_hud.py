@@ -417,15 +417,28 @@ class MiniHUD(QWidget):
             super().keyPressEvent(event)
 
     def _on_speak_clicked(self):
-        # Türkçe seçildiyse İngilizce çeviriyi oku, İngilizce seçildiyse orijinal İngilizceyi oku
-        text_to_speak = self.current_meaning if getattr(self, "detected_lang", "EN") == "TR" else self.current_source
+        # Türkçe girdi -> İngilizce hedefi Amerikan sesiyle oku
+        # İngilizce girdi -> Türkçe çeviriyi Türkçe sesiyle oku
+        if getattr(self, "detected_lang", "EN") == "TR":
+            text_to_speak = self.current_meaning
+            lang = "en"
+        else:
+            text_to_speak = self.current_meaning
+            lang = "tr"
+
         if text_to_speak:
-            tts_engine.speak_single(text_to_speak, lang="en", slow=False)
+            tts_engine.speak_single(text_to_speak, lang=lang, slow=False)
 
     def _on_slow_clicked(self):
-        text_to_speak = self.current_meaning if getattr(self, "detected_lang", "EN") == "TR" else self.current_source
+        if getattr(self, "detected_lang", "EN") == "TR":
+            text_to_speak = self.current_meaning
+            lang = "en"
+        else:
+            text_to_speak = self.current_meaning
+            lang = "tr"
+
         if text_to_speak:
-            tts_engine.speak_single(text_to_speak, lang="en", slow=True)
+            tts_engine.speak_single(text_to_speak, lang=lang, slow=True)
 
     def _copy_tr(self):
         if self.current_meaning:
