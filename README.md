@@ -57,6 +57,9 @@ Standart çeviri araçlarının aksine; metin içi deyimleri, sokak ve iş hayat
 ### 9. İki Yönlü Doğal Seslendirme Motoru (Microsoft Edge-TTS)
 * Türkçe girdilerde hedef İngilizceyi Amerikan aksanıyla, İngilizce girdilerde hedef Türkçeyi doğal tonlamayla seslendirir.
 
+### 10. Sessiz Arka Plan ve Otomatik Başlangıç (Windows Boot Autostart)
+* Bilgisayar her açıldığında ekrana pencereler açmadan doğrudan sistem tepsisine (System Tray) sessizce yerleşir. Sıfır gecikmeyle (Zero Latency) arka planda kısayolları dinler ve minimum kaynak tüketir. Çift kilitli (Windows Registry + Startup) mimarisi sayesinde açılışlarda kilitlenme veya çökme yaşanmaz.
+
 ---
 
 ## Kurulum
@@ -111,8 +114,9 @@ Ghost Translator is a lightweight, zero-latency desktop AI Co-Pilot engineered f
 * **In-Place Chat Translation (F9):** Replaces selected text in-place across any active window or game chat.
 * **Vision OCR (CTRL+SHIFT+S):** High-precision screen snipping powered by Gemini Vision.
 * **Systems & Compiler Doctor:** Diagnoses C++, Python, and server syserr crash logs with actionable fixes.
-* **Spaced Repetition Flashcards:** Long-term lexical retention backed by the SM-2 algorithm.
+* **Spaced Repetition Flashcards:** Retains vocabulary using the SM-2 spaced repetition algorithm.
 * **Bilingual Neural TTS:** Studio-grade pronunciation via Microsoft Edge Neural Speech engine.
+* **Silent Background Autostart:** Seamlessly launches on Windows boot directly into the system tray without disruptive pop-ups, maintaining zero latency and a lightweight memory footprint.
 
 ### Quick Start
 1. Ensure Python 3.9+ is installed with PATH enabled.
