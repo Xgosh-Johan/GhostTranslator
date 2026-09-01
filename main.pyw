@@ -211,14 +211,15 @@ class GhostTranslatorService:
 
             # Akıllı Seslendirme Sırası
             if detected_lang == "TR":
-                target_to_speak = speech_tr if speech_tr else meaning
-                tts_engine.speak_single(target_to_speak, lang="en")
+                # Türkçe seçildi -> Hedef İngilizce karşılığını Amerikan sesiyle oku
+                clean_target = speech_tr if (speech_tr and speech_tr.lower() != selected_text.lower()) else meaning
+                clean_target = re.sub(r'[/\\()\[\]]+', ', ', clean_target).strip()
+                tts_engine.speak_single(clean_target, lang="en")
             else:
-                speak_en_orig = config_manager.get("tts", "speak_english", False)
-                if speak_en_orig:
-                    tts_engine.speak_bilingual(selected_text, speech_tr)
-                else:
-                    tts_engine.speak_single(speech_tr, lang="tr")
+                # İngilizce seçildi -> Hedef Türkçe anlamı Türkçe sesiyle oku
+                clean_target = speech_tr if (speech_tr and speech_tr.lower() != selected_text.lower()) else meaning
+                clean_target = re.sub(r'[/\\()\[\]]+', ', ', clean_target).strip()
+                tts_engine.speak_single(clean_target, lang="tr")
 
         threading.Thread(target=_worker, daemon=True).start()
 
