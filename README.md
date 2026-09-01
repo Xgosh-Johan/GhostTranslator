@@ -1,124 +1,127 @@
-# 👻 Ghost Translator & AI Desktop Co-Pilot
+# Ghost Translator & AI Desktop Co-Pilot
 
 <div align="center">
 
-![Author](https://img.shields.io/badge/Author-Xgosh--Johan-10b981?style=for-the-badge&logo=github)
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python)
-![PyQt5](https://img.shields.io/badge/GUI-PyQt5-059669?style=for-the-badge&logo=qt)
-![Gemini AI](https://img.shields.io/badge/AI-Google%20Gemini-EA580C?style=for-the-badge&logo=google)
-![Edge TTS](https://img.shields.io/badge/Audio-Microsoft%20Edge%20TTS-7C3AED?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-0284C7?style=for-the-badge)
+![Author](https://img.shields.io/badge/Author-Xgosh--Johan-059669?style=flat-square&logo=github)
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=flat-square&logo=python)
+![Framework](https://img.shields.io/badge/GUI-PyQt5-10b981?style=flat-square&logo=qt)
+![Engine](https://img.shields.io/badge/AI-Google%20Gemini-EA580C?style=flat-square&logo=google)
+![TTS](https://img.shields.io/badge/Audio-Microsoft%20Edge%20TTS-7C3AED?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-0284C7?style=flat-square)
 
-**Geliştiriciler, Oyuncular ve Dil Öğrenenler İçin Yeni Nesil Yapay Zeka Destekli Masaüstü Çeviri & Co-Pilot Asistanı**
+**Geliştiriciler, Oyuncular ve Profesyoneller İçin Yeni Nesil Masaüstü Çeviri ve Yapay Zeka Asistanı**
 
 Created & Designed by **[Xgosh-Johan](https://github.com/Xgosh-Johan)**
 
-[✨ Özellikler](#-özellikler) • [🚀 Hızlı Kurulum](#-hızlı-kurulum) • [🔑 Ücretsiz API Alma](#-30-saniyede-ücretsiz-gemini-api-anahtarı-alma) • [⌨️ Kısayollar](#️-varsayılan-kısayol-tuşları) • [English Guide](#-english-quick-guide)
+[Genel Bakış](#genel-bakış) • [Temel Yetenekler](#temel-yetenekler) • [Kurulum](#kurulum) • [API Yapılandırması](#api-yapılandırması) • [Kısayol Matrisi](#kısayol-matrisi) • [English Documentation](#english-documentation)
 
 </div>
 
 ---
 
-## 🌟 Neden Ghost Translator?
+## Genel Bakış
 
-Piyasadaki klasik çeviri araçları (DeepL, Google Translate) sadece düz kelimeleri çevirir; oyun içi diyalogları, sokak İngilizcesi deyimlerini, alternatif söyleyiş tarzlarını ve geliştirici C++/Syserr hatalarını anlamaz.
+Ghost Translator, ekranınızda arka planda çalışan ve sistem kaynaklarını tüketmeden sadece ihtiyaç anında tek tuşla devreye giren yüksek performanslı bir masaüstü yapay zeka asistanıdır.
 
-**Ghost Translator**, ekranınızda sessizce hazır bekleyen ve sadece bir tuşla devreye giren **hepsi-bir-arada bir masaüstü süper asistanıdır:**
-
-```
-  ┌─────────────────────────────────────────────────────────────┐
-  │  ⚡ F8: Anında HUD Çevirisi & Deyim Dedektörü                │
-  │  💬 F9: Chatte / Oyunda Yerinde Doğal Çeviri                │
-  │  🖼️ CTRL+SHIFT+S: Kopyalanamayan Alanlar İçin OCR Çevirisi  │
-  │  🛠️ C++ & Syserr Hata Reçetesi Doktoru                      │
-  │  🧠 Unutma Eğrili (SM-2) Kelime Hafıza Kartları & Quiz      │
-  └─────────────────────────────────────────────────────────────┘
-```
+Standart çeviri araçlarının aksine; metin içi deyimleri, sokak ve iş hayatı İngilizcesi alternatiflerini, oyun içi kopyalanamayan diyalogları ve yazılım loglarındaki (C++, Syserr) hata satırlarını analiz ederek doğrudan çözüm reçetesi sunar.
 
 ---
 
-## ✨ Öne Çıkan Süper Güçler
+## Temel Yetenekler
 
-### 1. ⚡ Akıllı Mini HUD & Devasa Okuma Modu (`F8`)
-* Seçtiğiniz metnin üzerinde anında kararmaz ve donmaz bir OLED koyu kart belirir.
-* **`🔍 Büyüt`**'e bastığınızda kart yerinde **`1020x680` sabit çerçeveli paralel okuma stüdyosuna** dönüşür. Uzun makaleleri ve paragrafları yan yana, kaydırma çubuğuyla (Scrollbar) rahatça okuyabilirsiniz.
+### 1. Akıllı HUD ve Paralel Okuma Modu (F8)
+* Ekranda seçilen herhangi bir metnin üzerinde anında yerinde genişleyen OLED arayüz kartı belirir.
+* Büyütme modunda sabit çerçeveli (1020x680) çift sütunlu okuma stüdyosuna dönüşür; uzun makaleler ve paragraflar bağımsız kaydırma çubukları ile rahatça okunabilir.
 
-### 2. 💡 Deyim & Phrasal Verb (Kalıp Fiil) Dedektörü
-* Metinde bir deyim (*"Bite the bullet"*, *"Burn the midnight oil"*, *"Break a leg"*) veya kalıp fiil geçtiğinde altın sarısı **`💡 DEYİM`** rozeti açılır ve ifadenin gerçek mecazi anlamını tek satırda açıklar.
+### 2. Deyim ve Kalıp Fiil Analizi (Idioms & Phrasal Verbs)
+* Metin içerisindeki deyimsel kalıpları ("Bite the bullet", "Burn the midnight oil" vb.) otomatik olarak tespit eder ve mecazi anlamını tek satırda açıklar.
 
-### 3. 🎭 "Bunu Başka Nasıl Söylersin?" (Native Alternatifler)
-* Ana dili İngilizce olanların gündelik veya iş hayatında kullandığı **2-3 doğal alternatif ifade** (Daily & Native) sunar.
+### 3. Native Alternatif İfadeler
+* Cümlelerin ana dili İngilizce olan konuşucular tarafından gündelik ve profesyonel hayatta nasıl ifade edildiğini gösteren 2-3 alternatif cümle sunar.
 
-### 4. 📖 Kelime Anatomisi & Örnek Cümleler
-* Tek bir kelime seçtiğinizde kelimenin türünü (*İsim / Fiil / Sıfat*) ve içinde geçtiği **2 adet kısa canlı örnek cümle + Türkçe çevirisini** listeler.
+### 4. Kelime Anatomisi ve Örnek Cümleler
+* Tekil kelimeler seçildiğinde kelime türünü (İsim / Fiil / Sıfat) ve kelimenin yer aldığı 2 adet örnek cümleyi Türkçe çevirisiyle listeler.
 
-### 5. 💬 İki Yönlü Yerinde Chat Değiştirici (`F9`)
-* Discord'da, oyunda veya tarayıcıda Türkçe bir şey yazıp seçin ve `F9`'a basın; yazınız anında silinir, yerine **doğal yerel İngilizce karşılığı yapışır** ve telaffuzunu kulağınıza okur.
+### 5. Yerinde İki Yönlü Chat Değiştirici (F9)
+* Oyun içi sohbet kutularında, Discord'da veya metin editörlerinde yazılan Türkçe cümleyi seçip F9 tuşuna basıldığında metin doğrudan doğal İngilizce karşılığıyla değiştirilir.
 
-### 6. 🖼️ Ekran Kırpma OCR Çevirisi (`CTRL + SHIFT + S`)
-* Metin olarak kopyalanamayan her şeyi (oyun içi NPC diyalogları, resimler, kilitli PDF'ler) fareyle kutu içine alın; Google Vision anında okuyup çevirsin.
+### 6. Ekran Kırpma ile Optik Karakter Tanıma (OCR - CTRL+SHIFT+S)
+* Ekranda kopyalanamayan oyun içi diyalogları, resimleri veya kilitli belgeleri fareyle seçerek Google Gemini Vision üzerinden anında metne ve hedef dile dönüştürür.
 
-### 7. 🛠️ C++ & Syserr Geliştirici Doktoru
-* Kod logları veya Metin2/C++ syserr satırları seçildiğinde, yapay zeka hatayı teşhis edip **1-2 maddelik net çözüm reçetesi** üretir.
+### 7. C++ ve Syserr Hata Teşhis Doktoru
+* Kod satırları veya sunucu çökme logları seçildiğinde hatanın kök nedenini analiz ederek uygulanabilir çözüm reçetesi üretir.
 
-### 8. 🧠 SM-2 Spaced Repetition (Aralıklı Tekrar) Kelime Stüdyosu
-* Çevirdiğiniz her kelime SQLite veritabanına kaydedilir. Ana paneldeki **Flashcard / Quiz** modu unutma eğrinize göre kelimeleri size periyodik olarak hatırlatır.
+### 8. Aralıklı Tekrar (SM-2 Spaced Repetition) Kelime Hafızası
+* Çevrilen tüm içerikler yerel SQLite veritabanına kaydedilir. Flashcard ve Quiz modülü SuperMemo SM-2 algoritması ile kelimelerin unutulmasını engeller.
 
-### 9. 🎧 Akıllı İki Yönlü Stüdyo Seslendirmesi (Microsoft Edge-TTS)
-* Türkçe seçildiğinde İngilizce karşılığını Amerikan aksanıyla (`en-US-GuyNeural`), İngilizce seçildiğinde Türkçesini (`tr-TR-AhmetNeural`) kristal netliğinde okur.
+### 9. İki Yönlü Doğal Seslendirme Motoru (Microsoft Edge-TTS)
+* Türkçe girdilerde hedef İngilizceyi Amerikan aksanıyla, İngilizce girdilerde hedef Türkçeyi doğal tonlamayla seslendirir.
 
 ---
 
-## 🚀 Hızlı Kurulum
+## Kurulum
 
-### Adım 1: Python Yükleyin
-Bilgisayarınızda Python 3.9 veya daha yenisi kurulu olmalıdır.
-* [Python İndir (Resmi Site)](https://www.python.org/downloads/) *(Yüklerken "Add Python to PATH" kutucuğunu işaretleyin!)*
+### Gereksinimler
+* Windows 10 / 11 (64-bit)
+* Python 3.9 veya daha güncel sürüm ([python.org](https://www.python.org/downloads/))
 
-### Adım 2: Tek Tıkla Kurun ve Başlatın
-1. Bu projeyi ZIP olarak indirin veya klonlayın:
+### Adımlar
+1. Projeyi bilgisayarınıza indirin veya klonlayın:
    ```bash
    git clone https://github.com/Xgosh-Johan/GhostTranslator.git
    ```
-2. Klasörün içindeki **`Kurulum_ve_Baslat.bat`** dosyasına çift tıklayın.
-3. Gerekli kütüphaneler otomatik kurulacak ve program saatinizin yanında (Sistem Tepsisi) sessizce çalışmaya başlayacaktır!
+2. Klasör içindeki `Kurulum_ve_Baslat.bat` dosyasını çalıştırın.
+3. Gerekli bağımlılıklar otomatik olarak kurulacak ve uygulama sistem tepsisinde (System Tray) çalışmaya başlayacaktır.
 
 ---
 
-## 🔑 30 Saniyede Ücretsiz Gemini API Anahtarı Alma
+## API Yapılandırması
 
-Ghost Translator, piyasadaki en hızlı ve cömert ücretsiz yapay zeka olan **Google Gemini Flash Lite** modelini kullanır:
+Uygulama, Google Gemini Flash Lite yapay zeka modelini kullanmaktadır:
 
-1. **[Google AI Studio](https://aistudio.google.com/app/apikey)** adresine gidin ve Google hesabınızla giriş yapın.
-2. **"Create API Key"** (API Anahtarı Oluştur) butonuna tıklayın.
-3. Verilen anahtarı kopyalayın.
-4. Ghost Translator ana penceresinde **"Ayarlar ve Kısayollar"** sekmesine gidin, anahtarı yapıştırıp **"Ayarları Kaydet"** butonuna basın.
+1. [Google AI Studio](https://aistudio.google.com/app/apikey) adresinden ücretsiz bir API anahtarı edinin.
+2. Ghost Translator ana panelindeki **Ayarlar ve Kısayollar** sekmesine gidin.
+3. API anahtarınızı ilgili alana yapıştırıp **Ayarları Kaydet** butonuna basın.
 
-> 🔒 **Gizlilik Garantisi:** API anahtarınız kesinlikle hiçbir üçüncü tarafa gönderilmez; sadece sizin bilgisayarınızdaki yerel `config.json` dosyasında saklanır.
+> **Veri Güvenliği Notu:** API anahtarınız ve tüm çeviri geçmişiniz yalnızca yerel bilgisayarınızda (`config.json` ve `ghost_translator.db`) saklanır. Hiçbir üçüncü taraf sunucuya veri aktarımı yapılmaz.
 
 ---
 
-## ⌨️ Varsayılan Kısayol Tuşları
+## Kısayol Matrisi
 
-| Kısayol | İşlev | Açıklama |
+| Kısayol | Fonksiyon | Açıklama |
 | :--- | :--- | :--- |
-| **`F8`** | ⚡ **Seçili Metni Çevir** | Ekranda fareyle seçtiğiniz herhangi bir metni çevirir, seslendirir ve HUD kartını açar. |
-| **`F9`** | 💬 **Chatte Yerinde Çevir** | Yazdığınız metni seçip `F9` basınca anında yerine çevirisini yapıştırır. |
-| **`CTRL + SHIFT + S`** | 🖼️ **Ekran Kırpma (OCR)** | Ekrandaki kopyalanamayan alanı fareyle seçip çevirir. |
-| **`CTRL + SHIFT + O`** | 📖 **Ana Paneli Aç/Kapat** | Kelime hafıza kartları ve geçmiş listesini tam ekran açar. |
-| **`ESC`** | ✕ **Kartı Kapat** | Açık olan mini kartı anında gizler. |
+| `F8` | Seçili Metin Çevirisi | Seçilen metni analiz eder, HUD kartını açar ve seslendirir. |
+| `F9` | Yerinde Chat Çevirisi | Seçili Türkçe metni silip yerine İngilizce çevirisini yapıştırır. |
+| `CTRL + SHIFT + S` | Ekran Kırpma (OCR) | Ekrandan seçilen görsel alanı metne dönüştürüp çevirir. |
+| `CTRL + SHIFT + O` | Ana Yönetim Paneli | Kelime hafıza kartları ve geçmiş listesini açar. |
+| `ESC` | Arayüz Kapatma | Açık olan mini HUD kartını kapatır. |
 
 ---
 
-## 👨‍💻 Project Creator & Lead Developer
+## English Documentation
 
-Bu proje **[Xgosh-Johan](https://github.com/Xgosh-Johan)** tarafından tasarlanmış ve geliştirilmiştir.
+### Overview
+Ghost Translator is a lightweight, zero-latency desktop AI Co-Pilot engineered for developers, gamers, and language learners.
 
-* **GitHub:** [@Xgosh-Johan](https://github.com/Xgosh-Johan)
-* **Lisans:** [MIT License](LICENSE)
+### Core Features
+* **Zero-Latency HUD (F8):** Instant on-screen overlay with expandable dual-column comparative reader.
+* **Idiom Recognition:** Identifies figurative expressions and provides accurate contextual translations.
+* **Native Alternatives:** Recommends authentic native phrasing for everyday and professional communication.
+* **In-Place Chat Translation (F9):** Replaces selected text in-place across any active window or game chat.
+* **Vision OCR (CTRL+SHIFT+S):** High-precision screen snipping powered by Gemini Vision.
+* **Systems & Compiler Doctor:** Diagnoses C++, Python, and server syserr crash logs with actionable fixes.
+* **Spaced Repetition Flashcards:** Long-term lexical retention backed by the SM-2 algorithm.
+* **Bilingual Neural TTS:** Studio-grade pronunciation via Microsoft Edge Neural Speech engine.
+
+### Quick Start
+1. Ensure Python 3.9+ is installed with PATH enabled.
+2. Run `Kurulum_ve_Baslat.bat`.
+3. Enter your Gemini API key in the Settings tab.
 
 ---
 
-## 📄 Lisans
+## Proje Sahibi & Geliştirici
 
-Bu proje [MIT Lisansı](LICENSE) altında açık kaynak olarak paylaşılmıştır. Dilediğiniz gibi kullanabilir, geliştirebilir ve paylaşabilirsiniz.
+* **Yazar:** [Xgosh-Johan](https://github.com/Xgosh-Johan)
+* **Lisans:** [MIT License with Attribution Clause](LICENSE)
