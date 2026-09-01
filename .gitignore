@@ -2,6 +2,9 @@
 config.json
 .env
 
+# Geliştirici Özel Yükleme Araçları
+GitHuba_Yukle.bat
+
 # Veritabanı ve Çalışma Logları
 *.db
 *.db-journal
