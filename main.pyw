@@ -12,14 +12,33 @@ __version__ = "2.0.0"
 
 import sys
 import os
+from pathlib import Path
+
+# 1. Çalışma Dizinini Kesin Olarak Proje Klasörüne Al (Windows Başlangıç Koruması)
+BASE_DIR = Path(__file__).resolve().parent
+os.chdir(BASE_DIR)
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+# 2. Windows Qt Platform Plugin (qwindows.dll) Yolunu Kesin Olarak Tanımla
+try:
+    import PyQt5
+    qt_plugins = os.path.join(os.path.dirname(PyQt5.__file__), "Qt5", "plugins")
+    if os.path.exists(qt_plugins):
+        os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = qt_plugins
+        platforms_path = os.path.join(qt_plugins, "platforms")
+        if hasattr(os, 'add_dll_directory') and os.path.exists(platforms_path):
+            os.add_dll_directory(platforms_path)
+except Exception:
+    pass
+
 import re
 import ctypes
 import threading
 import traceback
 from datetime import datetime
-from pathlib import Path
 
-# Windows Görev Çubuğunda Python İkonu Yerine Özel İkonun Görünmesini Sağla
+# 3. Windows Görev Çubuğunda Python İkonu Yerine Özel İkonun Görünmesini Sağla
 try:
     myappid = 'ghost.translator.desktop.copilot.v2'
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
@@ -29,7 +48,7 @@ except Exception:
 # ==========================================
 # 🚨 GLOBAL SYSERR LOG SİSTEMİ (Metin2 Tarzı)
 # ==========================================
-SYSERR_FILE = Path(__file__).resolve().parent / "syserr.txt"
+SYSERR_FILE = BASE_DIR / "syserr.txt"
 
 def write_syserr(msg):
     try:
