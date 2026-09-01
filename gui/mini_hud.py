@@ -1,4 +1,6 @@
 import sys
+import os
+import re
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QGraphicsDropShadowEffect, QApplication, QFrame, QScrollArea
