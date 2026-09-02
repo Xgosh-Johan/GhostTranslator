@@ -30,66 +30,69 @@ class MiniHUD(QWidget):
         self.current_alternatives = ""
         self.current_examples = ""
         self.current_badge = "⚡ ÇEVİRİ"
-        self.drag_position = None
-        self.is_expanded = False
+        self.detected_lang = "EN"
+        self.is_expanded = True  # Varsayılan olarak her zaman BÜYÜK (Çift Sütunlu) açılır
 
         self._init_ui()
 
-        # Fade-In Animasyonu
+        # Fade-in Animasyonu
         self.anim = QPropertyAnimation(self, b"windowOpacity")
-        self.anim.setDuration(180)
+        self.anim.setDuration(220)
 
     def _init_ui(self):
-        # Ana kart çerçevesi (OLED Deep Black + Emerald Vurgulu Çerçeve)
-        self.container = QWidget(self)
-        self.container.setObjectName("hudContainer")
+        self.container = QFrame(self)
+        self.container.setObjectName("hud_container")
         self.container.setStyleSheet("""
-            QWidget#hudContainer {
-                background-color: rgba(14, 14, 17, 0.98);
+            QFrame#hud_container {
+                background-color: rgba(15, 15, 18, 0.96);
                 border: 1.5px solid #10b981;
-                border-radius: 14px;
+                border-radius: 12px;
             }
         """)
 
-        # Derin gölge efekti
+        # Neon Glow Efekti
         shadow = QGraphicsDropShadowEffect(self)
         shadow.setBlurRadius(24)
-        shadow.setColor(QColor(0, 0, 0, 220))
+        shadow.setColor(QColor(16, 185, 129, 140))
         shadow.setOffset(0, 4)
         self.container.setGraphicsEffect(shadow)
 
         self.card_layout = QVBoxLayout(self.container)
-        self.card_layout.setContentsMargins(18, 14, 18, 14)
+        self.card_layout.setContentsMargins(14, 12, 14, 12)
         self.card_layout.setSpacing(10)
 
-        # 1. ÜST BAŞLIK VE BUTONLAR SATIRI
+        # ==========================================
+        # ÜST BAR (Başlık, Rozetler ve Çoklu Kontrol Butonları)
+        # ==========================================
         header_layout = QHBoxLayout()
-        header_layout.setSpacing(8)
+        header_layout.setSpacing(6)
 
+        # Çeviri Rozeti (⚡ EN ➔ TR / ⚡ TR ➔ EN)
         self.badge_label = QLabel("⚡ ÇEVİRİ", self)
         self.badge_label.setStyleSheet("""
             background-color: #059669;
             color: #ffffff;
             font-size: 11px;
             font-weight: bold;
-            padding: 3px 10px;
+            padding: 3px 8px;
             border-radius: 5px;
         """)
         header_layout.addWidget(self.badge_label)
 
+        # Fonetik Okunuş Rozeti
         self.phonetic_label = QLabel("", self)
         self.phonetic_label.setStyleSheet("""
-            background-color: rgba(16, 185, 129, 0.12);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            font-size: 12px;
-            font-weight: 600;
+            background-color: rgba(16, 185, 129, 0.16);
+            color: #6ee7b7;
+            font-size: 11px;
+            font-weight: bold;
             padding: 3px 8px;
             border-radius: 5px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
         """)
         header_layout.addWidget(self.phonetic_label)
 
-        # 💡 Deyim Rozeti (Kompakt modda hemen fark edilir)
+        # 💡 Deyim Rozeti
         self.idiom_chip = QLabel("", self)
         self.idiom_chip.setStyleSheet("""
             background-color: rgba(245, 158, 11, 0.16);
@@ -105,13 +108,13 @@ class MiniHUD(QWidget):
 
         header_layout.addStretch()
 
-        # 1.0x Normal Dinle Butonu
-        self.btn_speak = QPushButton("🔊 Dinle", self)
-        self.btn_speak.setCursor(Qt.PointingHandCursor)
-        self.btn_speak.setFixedHeight(28)
-        self.btn_speak.setStyleSheet("""
+        # 1. 🇹🇷 Türkçe Oku Butonu
+        self.btn_speak_tr = QPushButton("🇹🇷 Türkçe Oku", self)
+        self.btn_speak_tr.setCursor(Qt.PointingHandCursor)
+        self.btn_speak_tr.setFixedHeight(28)
+        self.btn_speak_tr.setStyleSheet("""
             QPushButton {
-                background-color: #059669;
+                background-color: #047857;
                 color: #ffffff;
                 border: none;
                 border-radius: 6px;
@@ -119,12 +122,50 @@ class MiniHUD(QWidget):
                 font-weight: bold;
                 padding: 0 10px;
             }
-            QPushButton:hover { background-color: #047857; }
+            QPushButton:hover { background-color: #059669; }
         """)
-        self.btn_speak.clicked.connect(self._on_speak_clicked)
-        header_layout.addWidget(self.btn_speak)
+        self.btn_speak_tr.clicked.connect(self._on_speak_tr_clicked)
+        header_layout.addWidget(self.btn_speak_tr)
 
-        # 0.5x Yavaş Dinle Butonu
+        # 2. 🇬🇧 İngilizce Oku Butonu
+        self.btn_speak_en = QPushButton("🇬🇧 İngilizce Oku", self)
+        self.btn_speak_en.setCursor(Qt.PointingHandCursor)
+        self.btn_speak_en.setFixedHeight(28)
+        self.btn_speak_en.setStyleSheet("""
+            QPushButton {
+                background-color: #1e3a8a;
+                color: #ffffff;
+                border: none;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 0 10px;
+            }
+            QPushButton:hover { background-color: #2563eb; }
+        """)
+        self.btn_speak_en.clicked.connect(self._on_speak_en_clicked)
+        header_layout.addWidget(self.btn_speak_en)
+
+        # 3. ⏹️ Dinlemeyi Durdur Butonu
+        self.btn_stop = QPushButton("⏹️ Durdur", self)
+        self.btn_stop.setCursor(Qt.PointingHandCursor)
+        self.btn_stop.setFixedHeight(28)
+        self.btn_stop.setStyleSheet("""
+            QPushButton {
+                background-color: #27272a;
+                color: #f87171;
+                border: 1px solid #7f1d1d;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 0 8px;
+            }
+            QPushButton:hover { background-color: #991b1b; color: #ffffff; }
+        """)
+        self.btn_stop.clicked.connect(self._on_stop_clicked)
+        header_layout.addWidget(self.btn_stop)
+
+        # 4. 0.5x Yavaş Dinle Butonu
         self.btn_slow = QPushButton("🐢 Yavaş", self)
         self.btn_slow.setCursor(Qt.PointingHandCursor)
         self.btn_slow.setFixedHeight(28)
@@ -143,8 +184,8 @@ class MiniHUD(QWidget):
         self.btn_slow.clicked.connect(self._on_slow_clicked)
         header_layout.addWidget(self.btn_slow)
 
-        # 🔍 BÜYÜT / KÜÇÜLT BUTONU (Aynı Kart İçinde Genişletme)
-        self.btn_expand = QPushButton("🔍 Büyüt", self)
+        # 5. 🔍 BÜYÜT / KÜÇÜLT BUTONU
+        self.btn_expand = QPushButton("🔍 Küçült", self)
         self.btn_expand.setCursor(Qt.PointingHandCursor)
         self.btn_expand.setFixedHeight(28)
         self.btn_expand.setStyleSheet("""
@@ -155,14 +196,14 @@ class MiniHUD(QWidget):
                 border-radius: 6px;
                 font-size: 11px;
                 font-weight: bold;
-                padding: 0 10px;
+                padding: 0 9px;
             }
             QPushButton:hover { background-color: #059669; color: #ffffff; }
         """)
         self.btn_expand.clicked.connect(self._on_expand_clicked)
         header_layout.addWidget(self.btn_expand)
 
-        # Kapat Butonu (✕)
+        # 6. Kapat Butonu (✕)
         self.btn_close = QPushButton("✕", self)
         self.btn_close.setFixedSize(28, 28)
         self.btn_close.setCursor(Qt.PointingHandCursor)
@@ -178,9 +219,9 @@ class MiniHUD(QWidget):
                 padding: 0;
             }
             QPushButton:hover {
-                background-color: #7f1d1d;
-                color: #f87171;
-                border-color: #ef4444;
+                background-color: #dc2626;
+                color: #ffffff;
+                border-color: #dc2626;
             }
         """)
         self.btn_close.clicked.connect(self.hide)
@@ -188,7 +229,6 @@ class MiniHUD(QWidget):
 
         self.card_layout.addLayout(header_layout)
 
-        # İnce Çizgi
         self.sep_line = QFrame()
         self.sep_line.setFrameShape(QFrame.HLine)
         self.sep_line.setStyleSheet("background-color: #222226; height: 1px; border: none;")
@@ -228,6 +268,7 @@ class MiniHUD(QWidget):
         c_layout.addWidget(self.meaning_label)
 
         self.card_layout.addWidget(self.compact_widget)
+        self.compact_widget.hide()
 
         # ==========================================
         # GÖRÜNÜM B: BÜYÜTÜLMÜŞ ÇİFT SÜTUNLU PARALEL OKUMA GÖRÜNÜMÜ
@@ -241,15 +282,15 @@ class MiniHUD(QWidget):
         split_layout = QHBoxLayout()
         split_layout.setSpacing(12)
 
-        # Sol Kutu (İngilizce)
+        # Sol Kutu (Orijinal)
         left_box = QFrame(self.expanded_widget)
         left_box.setStyleSheet("background-color: #121216; border: 1px solid #232328; border-radius: 10px;")
         l_lay = QVBoxLayout(left_box)
         l_lay.setContentsMargins(12, 10, 12, 10)
         l_lay.setSpacing(6)
-        l_title = QLabel("🇬🇧 ORİJİNAL METİN", left_box)
-        l_title.setStyleSheet("color: #a1a1aa; font-size: 11px; font-weight: bold;")
-        l_lay.addWidget(l_title)
+        self.l_title = QLabel("🇬🇧 ORİJİNAL METİN", left_box)
+        self.l_title.setStyleSheet("color: #a1a1aa; font-size: 11px; font-weight: bold;")
+        l_lay.addWidget(self.l_title)
 
         l_scroll = QScrollArea(left_box)
         l_scroll.setWidgetResizable(True)
@@ -262,15 +303,15 @@ class MiniHUD(QWidget):
         l_lay.addWidget(l_scroll)
         split_layout.addWidget(left_box, stretch=1)
 
-        # Sağ Kutu (Türkçe)
+        # Sağ Kutu (Çeviri)
         right_box = QFrame(self.expanded_widget)
         right_box.setStyleSheet("background-color: #121216; border: 1px solid #232328; border-left: 3px solid #10b981; border-radius: 10px;")
         r_lay = QVBoxLayout(right_box)
         r_lay.setContentsMargins(12, 10, 12, 10)
         r_lay.setSpacing(6)
-        r_title = QLabel("🇹🇷 TÜRKÇE ÇEVİRİSİ & ANLAMI", right_box)
-        r_title.setStyleSheet("color: #10b981; font-size: 11px; font-weight: bold;")
-        r_lay.addWidget(r_title)
+        self.r_title = QLabel("🇹🇷 TÜRKÇE ÇEVİRİSİ & ANLAMI", right_box)
+        self.r_title.setStyleSheet("color: #10b981; font-size: 11px; font-weight: bold;")
+        r_lay.addWidget(self.r_title)
 
         r_scroll = QScrollArea(right_box)
         r_scroll.setWidgetResizable(True)
@@ -340,10 +381,11 @@ class MiniHUD(QWidget):
         exp_bar = QHBoxLayout()
         exp_bar.setSpacing(10)
 
-        btn_copy = QPushButton("📋 Türkçeyi Kopyala", self.expanded_widget)
-        btn_copy.setFixedHeight(32)
-        btn_copy.setCursor(Qt.PointingHandCursor)
-        btn_copy.setStyleSheet("""
+        # 📋 Türkçeyi Kopyala Butonu
+        self.btn_copy_tr = QPushButton("📋 Türkçeyi Kopyala", self.expanded_widget)
+        self.btn_copy_tr.setFixedHeight(32)
+        self.btn_copy_tr.setCursor(Qt.PointingHandCursor)
+        self.btn_copy_tr.setStyleSheet("""
             QPushButton {
                 background-color: #18181b;
                 color: #34d399;
@@ -351,17 +393,36 @@ class MiniHUD(QWidget):
                 font-size: 11px;
                 font-weight: 600;
                 border-radius: 6px;
-                padding: 0 12px;
+                padding: 0 14px;
             }
             QPushButton:hover { background-color: #059669; color: #ffffff; }
         """)
-        btn_copy.clicked.connect(self._copy_tr)
-        exp_bar.addWidget(btn_copy)
-        exp_bar.addStretch()
+        self.btn_copy_tr.clicked.connect(self._copy_tr)
+        exp_bar.addWidget(self.btn_copy_tr)
 
+        # 📋 İngilizceyi Kopyala Butonu
+        self.btn_copy_en = QPushButton("📋 İngilizceyi Kopyala", self.expanded_widget)
+        self.btn_copy_en.setFixedHeight(32)
+        self.btn_copy_en.setCursor(Qt.PointingHandCursor)
+        self.btn_copy_en.setStyleSheet("""
+            QPushButton {
+                background-color: #18181b;
+                color: #60a5fa;
+                border: 1px solid #2563eb;
+                font-size: 11px;
+                font-weight: 600;
+                border-radius: 6px;
+                padding: 0 14px;
+            }
+            QPushButton:hover { background-color: #2563eb; color: #ffffff; }
+        """)
+        self.btn_copy_en.clicked.connect(self._copy_en)
+        exp_bar.addWidget(self.btn_copy_en)
+
+        exp_bar.addStretch()
         exp_layout.addLayout(exp_bar)
+
         self.card_layout.addWidget(self.expanded_widget)
-        self.expanded_widget.hide()
 
         # ==========================================
         # 🛠️ KOD / SYSERR ÇÖZÜM REÇETESİ KUTUSU
@@ -391,7 +452,7 @@ class MiniHUD(QWidget):
         self.recipe_card.hide()
 
         # Bilgi Notu
-        self.hint_lbl = QLabel("📌 Kapatmak için [✕] veya ESC'ye basın, geniş okumak için [🔍 Büyüt]'e tıklayın.", self.container)
+        self.hint_lbl = QLabel("📌 Kapatmak için [✕] veya ESC'ye basın.", self.container)
         self.hint_lbl.setStyleSheet("color: #52525b; font-size: 11px; margin-top: 2px;")
         self.card_layout.addWidget(self.hint_lbl)
 
@@ -414,22 +475,25 @@ class MiniHUD(QWidget):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
+            tts_engine.stop()
             self.hide()
         else:
             super().keyPressEvent(event)
 
-    def _on_speak_clicked(self):
-        # Türkçe girdi -> İngilizce hedefi Amerikan sesiyle oku
-        # İngilizce girdi -> Türkçe çeviriyi Türkçe sesiyle oku
-        if getattr(self, "detected_lang", "EN") == "TR":
-            text_to_speak = self.current_meaning
-            lang = "en"
-        else:
-            text_to_speak = self.current_meaning
-            lang = "tr"
+    def _on_speak_tr_clicked(self):
+        tr_text = self.current_meaning if getattr(self, "detected_lang", "EN") == "EN" else self.current_source
+        clean = re.sub(r'[/\\()\[\]]+', ', ', tr_text).strip()
+        if clean:
+            tts_engine.speak_single(clean, lang="tr", slow=False)
 
-        if text_to_speak:
-            tts_engine.speak_single(text_to_speak, lang=lang, slow=False)
+    def _on_speak_en_clicked(self):
+        en_text = self.current_source if getattr(self, "detected_lang", "EN") == "EN" else self.current_meaning
+        clean = re.sub(r'[/\\()\[\]]+', ', ', en_text).strip()
+        if clean:
+            tts_engine.speak_single(clean, lang="en", slow=False)
+
+    def _on_stop_clicked(self):
+        tts_engine.stop()
 
     def _on_slow_clicked(self):
         if getattr(self, "detected_lang", "EN") == "TR":
@@ -439,59 +503,76 @@ class MiniHUD(QWidget):
             text_to_speak = self.current_meaning
             lang = "tr"
 
-        if text_to_speak:
-            tts_engine.speak_single(text_to_speak, lang=lang, slow=True)
+        clean = re.sub(r'[/\\()\[\]]+', ', ', text_to_speak).strip()
+        if clean:
+            tts_engine.speak_single(clean, lang=lang, slow=True)
 
     def _copy_tr(self):
-        if self.current_meaning:
-            QApplication.clipboard().setText(self.current_meaning)
+        tr_text = self.current_meaning if getattr(self, "detected_lang", "EN") == "EN" else self.current_source
+        if tr_text:
+            QApplication.clipboard().setText(tr_text)
+
+    def _copy_en(self):
+        en_text = self.current_source if getattr(self, "detected_lang", "EN") == "EN" else self.current_meaning
+        if en_text:
+            QApplication.clipboard().setText(en_text)
+
+    def _apply_expanded_view(self):
+        self.btn_expand.setText("🔍 Küçült")
+        self.compact_widget.hide()
+        self.expanded_widget.show()
+
+        if getattr(self, "detected_lang", "EN") == "TR":
+            self.l_title.setText("🇹🇷 ORİJİNAL METİN (TÜRKÇE)")
+            self.r_title.setText("🇬🇧 İNGİLİZCE ÇEVİRİSİ & ANLAMI")
+        else:
+            self.l_title.setText("🇬🇧 ORİJİNAL METİN (İNGİLİZCE)")
+            self.r_title.setText("🇹🇷 TÜRKÇE ÇEVİRİSİ & ANLAMI")
+
+        self.exp_src_label.setText(self.current_source)
+        self.exp_tr_label.setText(self.current_meaning)
+
+        extra_count = 0
+        if self.current_idiom:
+            self.exp_idiom_label.setText(self.current_idiom)
+            self.exp_idiom_card.show()
+            extra_count += 1
+        else:
+            self.exp_idiom_card.hide()
+
+        if self.current_alternatives:
+            self.exp_alt_label.setText(self.current_alternatives)
+            self.exp_alt_card.show()
+            extra_count += 1
+        else:
+            self.exp_alt_card.hide()
+
+        if self.current_examples:
+            self.exp_ex_label.setText(self.current_examples)
+            self.exp_ex_card.show()
+            extra_count += 1
+        else:
+            self.exp_ex_card.hide()
+
+        target_w = 980
+        target_h = 560 + (extra_count * 50)
+        self.setFixedSize(target_w, target_h)
+        self.container.setFixedSize(target_w - 20, target_h - 20)
+
+        screen = QApplication.primaryScreen()
+        if screen:
+            geo = screen.availableGeometry()
+            self.move(
+                geo.center().x() - (target_w // 2),
+                geo.center().y() - (target_h // 2)
+            )
 
     def _on_expand_clicked(self):
         self.is_expanded = not self.is_expanded
         if self.is_expanded:
-            # BÜYÜTÜLMÜŞ MODA GEÇ
-            self.btn_expand.setText("🔍 Küçült")
-            self.compact_widget.hide()
-            self.expanded_widget.show()
-            self.exp_src_label.setText(self.current_source)
-            self.exp_tr_label.setText(self.current_meaning)
-
-            extra_count = 0
-            if self.current_idiom:
-                self.exp_idiom_label.setText(self.current_idiom)
-                self.exp_idiom_card.show()
-                extra_count += 1
-            else:
-                self.exp_idiom_card.hide()
-
-            if self.current_alternatives:
-                self.exp_alt_label.setText(self.current_alternatives)
-                self.exp_alt_card.show()
-                extra_count += 1
-            else:
-                self.exp_alt_card.hide()
-
-            if self.current_examples:
-                self.exp_ex_label.setText(self.current_examples)
-                self.exp_ex_card.show()
-                extra_count += 1
-            else:
-                self.exp_ex_card.hide()
-
-            target_h = 520 + (extra_count * 55)
-            self.setFixedSize(940, target_h)
-            self.container.setFixedSize(920, target_h - 20)
-
-            # Ekranın tam ortasına al
-            screen = QApplication.primaryScreen()
-            if screen:
-                geo = screen.availableGeometry()
-                self.move(
-                    geo.center().x() - 470,
-                    geo.center().y() - (target_h // 2)
-                )
+            self._apply_expanded_view()
         else:
-            # KOMPAKT MODA GERİ DÖN
+            # KOMPAKT MODA GEÇ
             self.btn_expand.setText("🔍 Büyüt")
             self.expanded_widget.hide()
             self.compact_widget.show()
@@ -537,22 +618,6 @@ class MiniHUD(QWidget):
         else:
             self.idiom_chip.hide()
 
-        # Varsayılan kompakt mod
-        self.is_expanded = False
-        self.btn_expand.setText("🔍 Büyüt")
-        self.expanded_widget.hide()
-        self.compact_widget.show()
-        self.setMinimumSize(0, 0)
-        self.setMaximumSize(16777215, 16777215)
-        self.container.setMinimumSize(0, 0)
-        self.container.setMaximumSize(16777215, 16777215)
-
-        total_len = len(source_text) + len(meaning)
-        target_width = 640 if total_len > 120 else 520
-
-        self.setFixedWidth(target_width)
-        self.container.setFixedWidth(target_width - 20)
-
         self.source_label.setText(source_text)
         self.meaning_label.setText(meaning)
 
@@ -562,10 +627,9 @@ class MiniHUD(QWidget):
         else:
             self.recipe_card.hide()
 
-        self.container.adjustSize()
-        self.layout().activate()
-        self.adjustSize()
-        self._position_hud()
+        # 1. Kural: Her zaman doğrudan BÜYÜK (Çift Sütunlu Paralel Stüdyo) modunda aç!
+        self.is_expanded = True
+        self._apply_expanded_view()
 
         self.setWindowOpacity(0.0)
         self.show()
@@ -584,15 +648,19 @@ class MiniHUD(QWidget):
 
         if pos_mode == "cursor":
             cursor_pos = QCursor.pos()
-            x = cursor_pos.x() + 25
-            y = cursor_pos.y() + 25
+            x = cursor_pos.x() + 15
+            y = cursor_pos.y() + 15
 
             if x + self.width() > screen_geo.right():
                 x = cursor_pos.x() - self.width() - 15
             if y + self.height() > screen_geo.bottom():
                 y = cursor_pos.y() - self.height() - 15
-        else:
-            x = screen_geo.right() - self.width() - 24
-            y = screen_geo.bottom() - self.height() - 24
 
-        self.move(QPoint(max(screen_geo.left() + 15, x), max(screen_geo.top() + 15, y)))
+            x = max(screen_geo.left() + 10, min(x, screen_geo.right() - self.width() - 10))
+            y = max(screen_geo.top() + 10, min(y, screen_geo.bottom() - self.height() - 10))
+            self.move(x, y)
+        else:
+            margin = 30
+            x = screen_geo.right() - self.width() - margin
+            y = screen_geo.bottom() - self.height() - margin
+            self.move(x, y)
