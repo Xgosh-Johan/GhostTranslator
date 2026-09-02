@@ -699,57 +699,40 @@ class WordCardWidget(QFrame):
 
         main_layout.addStretch()
 
-        # 3. ALT AKSİYON BUTONLARI (İki Dilli Seslendirme + Büyüt)
+        # 3. ALT AKSİYON BUTONLARI (Orijinal Temiz Tasarım)
         btn_bar = QHBoxLayout()
-        btn_bar.setSpacing(6)
+        btn_bar.setSpacing(8)
 
-        btn_speak_tr = QPushButton("🇹🇷 Türkçe", self)
-        btn_speak_tr.setFixedHeight(30)
-        btn_speak_tr.setCursor(Qt.PointingHandCursor)
-        btn_speak_tr.setStyleSheet("""
+        btn_speak = QPushButton("🔊 Dinle", self)
+        btn_speak.setFixedHeight(32)
+        btn_speak.setCursor(Qt.PointingHandCursor)
+        btn_speak.setStyleSheet("""
             QPushButton {
-                background-color: #047857;
+                background-color: #059669;
                 color: #ffffff;
-                font-size: 11px;
+                font-size: 12px;
                 font-weight: bold;
-                padding: 0 8px;
+                padding: 0 12px;
                 border-radius: 6px;
             }
-            QPushButton:hover { background-color: #059669; }
+            QPushButton:hover { background-color: #047857; }
         """)
-        btn_speak_tr.clicked.connect(self._speak_tr)
-        btn_bar.addWidget(btn_speak_tr)
-
-        btn_speak_en = QPushButton("🇬🇧 İngilizce", self)
-        btn_speak_en.setFixedHeight(30)
-        btn_speak_en.setCursor(Qt.PointingHandCursor)
-        btn_speak_en.setStyleSheet("""
-            QPushButton {
-                background-color: #1e3a8a;
-                color: #ffffff;
-                font-size: 11px;
-                font-weight: bold;
-                padding: 0 8px;
-                border-radius: 6px;
-            }
-            QPushButton:hover { background-color: #2563eb; }
-        """)
-        btn_speak_en.clicked.connect(self._speak_en)
-        btn_bar.addWidget(btn_speak_en)
+        btn_speak.clicked.connect(self._speak_smart)
+        btn_bar.addWidget(btn_speak)
 
         btn_bar.addStretch()
 
         btn_expand = QPushButton("🔍 Büyüt", self)
-        btn_expand.setFixedHeight(30)
+        btn_expand.setFixedHeight(32)
         btn_expand.setCursor(Qt.PointingHandCursor)
         btn_expand.setStyleSheet("""
             QPushButton {
                 background-color: #18181b;
                 color: #e4e4e7;
                 border: 1px solid #27272a;
-                font-size: 11px;
+                font-size: 12px;
                 font-weight: 600;
-                padding: 0 10px;
+                padding: 0 12px;
                 border-radius: 6px;
             }
             QPushButton:hover { background-color: #27272a; border-color: #10b981; color: #ffffff; }
@@ -763,10 +746,11 @@ class WordCardWidget(QFrame):
         self._open_detail()
 
     def _open_detail(self):
-        self.dialog = CardDetailDialog(self.record)
-        self.dialog.show()
-        self.dialog.raise_()
-        self.dialog.activateWindow()
+        try:
+            dlg = CardDetailDialog(self.record, self.window())
+            dlg.exec_()
+        except Exception as e:
+            print(f"[Ghost] Detay açma hatası: {e}")
 
     def _detect_source_language(self, text):
         tr_chars = set("ğşıöüçĞŞİÖÜÇ")
@@ -781,25 +765,22 @@ class WordCardWidget(QFrame):
             return "TR"
         return None
 
-    def _speak_tr(self):
+    def _speak_smart(self):
         source = self.record.get("source_text", "")
         trans = self.record.get("translated_text", "")
         ctx = self.record.get("context_type", "SELECTION")
         is_tr = (ctx == "CHAT_OUT" or self._detect_source_language(source) == "TR")
-        tr_text = source if is_tr else trans
-        clean = re.sub(r'[/\\()\[\]]+', ', ', tr_text).strip()
-        if clean:
-            tts_engine.speak_single(clean, lang="tr", slow=False)
 
-    def _speak_en(self):
-        source = self.record.get("source_text", "")
-        trans = self.record.get("translated_text", "")
-        ctx = self.record.get("context_type", "SELECTION")
-        is_tr = (ctx == "CHAT_OUT" or self._detect_source_language(source) == "TR")
-        en_text = trans if is_tr else source
-        clean = re.sub(r'[/\\()\[\]]+', ', ', en_text).strip()
+        if is_tr:
+            text = trans if trans else source
+            lang = "en"
+        else:
+            text = trans if trans else source
+            lang = "tr"
+
+        clean = re.sub(r'[/\\()\[\]]+', ', ', text).strip()
         if clean:
-            tts_engine.speak_single(clean, lang="en", slow=False)
+            tts_engine.speak_single(clean, lang=lang, slow=False)
 
     def _toggle_fav(self):
         rec_id = self.record.get("id")
