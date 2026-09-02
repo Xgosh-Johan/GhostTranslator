@@ -481,14 +481,14 @@ class MiniHUD(QWidget):
             super().keyPressEvent(event)
 
     def _on_speak_tr_clicked(self):
-        tr_text = self.current_meaning if getattr(self, "detected_lang", "EN") == "EN" else self.current_source
-        clean = re.sub(r'[/\\()\[\]]+', ', ', tr_text).strip()
+        text = getattr(self, "turkish_text", "") or (self.current_source if getattr(self, "detected_lang", "EN") == "TR" else self.current_meaning)
+        clean = re.sub(r'[/\\()\[\]]+', ', ', text).strip()
         if clean:
             tts_engine.speak_single(clean, lang="tr", slow=False)
 
     def _on_speak_en_clicked(self):
-        en_text = self.current_source if getattr(self, "detected_lang", "EN") == "EN" else self.current_meaning
-        clean = re.sub(r'[/\\()\[\]]+', ', ', en_text).strip()
+        text = getattr(self, "english_text", "") or (self.current_meaning if getattr(self, "detected_lang", "EN") == "TR" else self.current_source)
+        clean = re.sub(r'[/\\()\[\]]+', ', ', text).strip()
         if clean:
             tts_engine.speak_single(clean, lang="en", slow=False)
 
@@ -496,11 +496,12 @@ class MiniHUD(QWidget):
         tts_engine.stop()
 
     def _on_slow_clicked(self):
+        # Varsayılan olarak hedef çeviriyi yavaş oku
         if getattr(self, "detected_lang", "EN") == "TR":
-            text_to_speak = self.current_meaning
+            text_to_speak = getattr(self, "english_text", self.current_meaning)
             lang = "en"
         else:
-            text_to_speak = self.current_meaning
+            text_to_speak = getattr(self, "turkish_text", self.current_meaning)
             lang = "tr"
 
         clean = re.sub(r'[/\\()\[\]]+', ', ', text_to_speak).strip()
@@ -508,14 +509,14 @@ class MiniHUD(QWidget):
             tts_engine.speak_single(clean, lang=lang, slow=True)
 
     def _copy_tr(self):
-        tr_text = self.current_meaning if getattr(self, "detected_lang", "EN") == "EN" else self.current_source
-        if tr_text:
-            QApplication.clipboard().setText(tr_text)
+        text = getattr(self, "turkish_text", "") or (self.current_source if getattr(self, "detected_lang", "EN") == "TR" else self.current_meaning)
+        if text:
+            QApplication.clipboard().setText(text)
 
     def _copy_en(self):
-        en_text = self.current_source if getattr(self, "detected_lang", "EN") == "EN" else self.current_meaning
-        if en_text:
-            QApplication.clipboard().setText(en_text)
+        text = getattr(self, "english_text", "") or (self.current_meaning if getattr(self, "detected_lang", "EN") == "TR" else self.current_source)
+        if text:
+            QApplication.clipboard().setText(text)
 
     def _apply_expanded_view(self):
         self.btn_expand.setText("🔍 Küçült")
@@ -601,7 +602,15 @@ class MiniHUD(QWidget):
         self.current_alternatives = alternatives
         self.current_examples = examples
         self.current_badge = badge
-        self.detected_lang = "TR" if ("TR ➔ EN" in badge or "TR➔EN" in badge) else "EN"
+        is_tr_input = ("TR ➔ EN" in badge or "TR➔EN" in badge or "TR->" in badge)
+        self.detected_lang = "TR" if is_tr_input else "EN"
+
+        if is_tr_input:
+            self.turkish_text = source_text
+            self.english_text = meaning
+        else:
+            self.turkish_text = meaning
+            self.english_text = source_text
 
         self.badge_label.setText(badge)
         
