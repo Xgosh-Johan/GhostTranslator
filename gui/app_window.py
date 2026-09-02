@@ -747,7 +747,7 @@ class WordCardWidget(QFrame):
 
     def _open_detail(self):
         try:
-            dlg = CardDetailDialog(self.record, self.window())
+            dlg = CardDetailDialog(self.record, None)
             dlg.exec_()
         except Exception as e:
             print(f"[Ghost] Detay açma hatası: {e}")
