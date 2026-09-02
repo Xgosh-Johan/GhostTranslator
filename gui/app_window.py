@@ -192,11 +192,27 @@ class CardDetailDialog(QDialog):
         layout.setContentsMargins(24, 18, 24, 18)
         layout.setSpacing(12)
 
+        # Deterministik Dil Tespiti
+        source_raw = self.record.get("source_text", "")
+        trans_raw = self.record.get("translated_text", "")
+        ctx = self.record.get("context_type", "SELECTION")
+        is_tr = (ctx == "CHAT_OUT" or self._detect_source_language(source_raw) == "TR")
+
+        if is_tr:
+            self.turkish_text = source_raw
+            self.english_text = trans_raw
+            left_header = "🇹🇷 ORİJİNAL METİN (TÜRKÇE)"
+            right_header = "🇬🇧 İNGİLİZCE ÇEVİRİSİ & ANLAMI"
+        else:
+            self.turkish_text = trans_raw
+            self.english_text = source_raw
+            left_header = "🇬🇧 ORİJİNAL METİN (İNGİLİZCE)"
+            right_header = "🇹🇷 TÜRKÇE ÇEVİRİSİ & ANLAMI"
+
         # 1. ÜST BAŞLIK VE KAPATMA BUTONU
         header = QHBoxLayout()
         header.setSpacing(10)
 
-        ctx = self.record.get("context_type", "SELECTION")
         badge_text = "⚡ METİN SEÇİMİ" if ctx == "SELECTION" else ("💬 CHAT ÇEVİRİSİ" if ctx == "CHAT_OUT" else "🖼️ EKRAN KIRPMA (OCR)")
         badge = QLabel(badge_text, self)
         badge.setStyleSheet("""
@@ -211,7 +227,6 @@ class CardDetailDialog(QDialog):
 
         phonetic = self.record.get("phonetic", "")
         if phonetic and phonetic.strip().upper() not in ["YOK", "NONE", "NULL", ""]:
-            # Uzun fonetik metinlerin başlığı patlatmasını önle
             pho_text = phonetic if len(phonetic) <= 45 else phonetic[:42] + "..."
             pho_lbl = QLabel(pho_text, self)
             pho_lbl.setToolTip(phonetic)
@@ -255,69 +270,58 @@ class CardDetailDialog(QDialog):
         split_layout = QHBoxLayout()
         split_layout.setSpacing(14)
 
+        scrollbar_style = """
+            QScrollArea { background: transparent; border: none; }
+            QScrollBar:vertical { border: none; background: #141418; width: 5px; margin: 0px; border-radius: 2px; }
+            QScrollBar::handle:vertical { background: #27272a; min-height: 16px; border-radius: 2px; }
+            QScrollBar::handle:vertical:hover { background: #10b981; }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }
+        """
+
         # SOL: Orijinal Metin Kartı
         left_box = QFrame(self)
-        left_box.setStyleSheet("""
-            QFrame {
-                background-color: #121216;
-                border: 1px solid #232328;
-                border-radius: 10px;
-            }
-        """)
+        left_box.setStyleSheet("background-color: #121216; border: 1px solid #232328; border-radius: 10px;")
         left_lay = QVBoxLayout(left_box)
         left_lay.setContentsMargins(14, 10, 14, 10)
         left_lay.setSpacing(6)
 
-        left_title = QLabel("🇬🇧 ORİJİNAL METİN", left_box)
+        left_title = QLabel(left_header, left_box)
         left_title.setStyleSheet("color: #a1a1aa; font-size: 11px; font-weight: bold;")
         left_lay.addWidget(left_title)
 
         left_scroll = QScrollArea(left_box)
         left_scroll.setWidgetResizable(True)
-        left_scroll.setStyleSheet("background: transparent; border: none;")
-        src_val = QLabel(self.record.get("source_text", ""))
-        src_val.setStyleSheet("""
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 600;
-            line-height: 1.55;
-            background: transparent;
-        """)
+        left_scroll.setStyleSheet(scrollbar_style)
+        left_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        src_val = QLabel(source_raw)
+        src_val.setStyleSheet("color: #ffffff; font-size: 15px; font-weight: 600; line-height: 1.55; background: transparent;")
         src_val.setWordWrap(True)
+        src_val.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         src_val.setTextInteractionFlags(Qt.TextSelectableByMouse)
         left_scroll.setWidget(src_val)
         left_lay.addWidget(left_scroll)
         split_layout.addWidget(left_box, stretch=1)
 
-        # SAĞ: Türkçe Çeviri Kartı
+        # SAĞ: Çeviri Kartı
         right_box = QFrame(self)
-        right_box.setStyleSheet("""
-            QFrame {
-                background-color: #121216;
-                border: 1px solid #232328;
-                border-left: 3.5px solid #10b981;
-                border-radius: 10px;
-            }
-        """)
+        right_box.setStyleSheet("background-color: #121216; border: 1px solid #232328; border-left: 3.5px solid #10b981; border-radius: 10px;")
         right_lay = QVBoxLayout(right_box)
         right_lay.setContentsMargins(14, 10, 14, 10)
         right_lay.setSpacing(6)
 
-        right_title = QLabel("🇹🇷 TÜRKÇE ÇEVİRİSİ & ANLAMI", right_box)
+        right_title = QLabel(right_header, right_box)
         right_title.setStyleSheet("color: #10b981; font-size: 11px; font-weight: bold;")
         right_lay.addWidget(right_title)
 
         right_scroll = QScrollArea(right_box)
         right_scroll.setWidgetResizable(True)
-        right_scroll.setStyleSheet("background: transparent; border: none;")
-        tr_val = QLabel(self.record.get("translated_text", ""))
-        tr_val.setStyleSheet("""
-            color: #f4f4f5;
-            font-size: 15px;
-            line-height: 1.6;
-            background: transparent;
-        """)
+        right_scroll.setStyleSheet(scrollbar_style)
+        right_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        tr_val = QLabel(trans_raw)
+        tr_val.setStyleSheet("color: #f4f4f5; font-size: 15px; line-height: 1.6; background: transparent;")
         tr_val.setWordWrap(True)
+        tr_val.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         tr_val.setTextInteractionFlags(Qt.TextSelectableByMouse)
         right_scroll.setWidget(tr_val)
         right_lay.addWidget(right_scroll)
@@ -387,13 +391,7 @@ class CardDetailDialog(QDialog):
         if recipe:
             rec_box = QFrame(self)
             rec_box.setMaximumHeight(95)
-            rec_box.setStyleSheet("""
-                QFrame {
-                    background-color: rgba(30, 25, 18, 0.9);
-                    border: 1.5px solid #d97706;
-                    border-radius: 8px;
-                }
-            """)
+            rec_box.setStyleSheet("background-color: rgba(30, 25, 18, 0.9); border: 1.5px solid #d97706; border-radius: 8px;")
             rec_lay = QVBoxLayout(rec_box)
             rec_lay.setContentsMargins(10, 6, 10, 6)
             rec_lay.setSpacing(2)
@@ -409,19 +407,37 @@ class CardDetailDialog(QDialog):
             rec_lay.addWidget(rec_val)
             layout.addWidget(rec_box)
 
-        # 7. ALT AKSİYON BUTONLARI
+        # 7. ALT AKSİYON BUTONLARI (Gelişmiş Çift Dilli Stüdyo Kontrolleri)
         btn_bar = QHBoxLayout()
         btn_bar.setSpacing(10)
 
-        btn_speak = QPushButton("🔊 Dinle (1.0x)", self)
-        btn_speak.setFixedHeight(38)
-        btn_speak.setCursor(Qt.PointingHandCursor)
-        btn_speak.setStyleSheet("background-color: #059669; font-size: 12px; font-weight: bold; border-radius: 6px; padding: 0 16px;")
-        btn_speak.clicked.connect(lambda: tts_engine.speak_single(self.record.get("source_text", ""), lang="en", slow=False))
-        btn_bar.addWidget(btn_speak)
+        # 🇹🇷 Türkçe Oku
+        btn_speak_tr = QPushButton("🇹🇷 Türkçe Oku", self)
+        btn_speak_tr.setFixedHeight(36)
+        btn_speak_tr.setCursor(Qt.PointingHandCursor)
+        btn_speak_tr.setStyleSheet("background-color: #047857; color: #ffffff; font-size: 12px; font-weight: bold; border-radius: 6px; padding: 0 14px;")
+        btn_speak_tr.clicked.connect(self._speak_tr)
+        btn_bar.addWidget(btn_speak_tr)
 
+        # 🇬🇧 İngilizce Oku
+        btn_speak_en = QPushButton("🇬🇧 İngilizce Oku", self)
+        btn_speak_en.setFixedHeight(36)
+        btn_speak_en.setCursor(Qt.PointingHandCursor)
+        btn_speak_en.setStyleSheet("background-color: #1e3a8a; color: #ffffff; font-size: 12px; font-weight: bold; border-radius: 6px; padding: 0 14px;")
+        btn_speak_en.clicked.connect(self._speak_en)
+        btn_bar.addWidget(btn_speak_en)
+
+        # ⏹️ Durdur
+        btn_stop = QPushButton("⏹️ Durdur", self)
+        btn_stop.setFixedHeight(36)
+        btn_stop.setCursor(Qt.PointingHandCursor)
+        btn_stop.setStyleSheet("background-color: #27272a; color: #f87171; border: 1px solid #7f1d1d; font-size: 12px; font-weight: bold; border-radius: 6px; padding: 0 12px;")
+        btn_stop.clicked.connect(tts_engine.stop)
+        btn_bar.addWidget(btn_stop)
+
+        # 🐢 Yavaş
         btn_slow = QPushButton("🐢 Yavaş (0.5x)", self)
-        btn_slow.setFixedHeight(38)
+        btn_slow.setFixedHeight(36)
         btn_slow.setCursor(Qt.PointingHandCursor)
         btn_slow.setStyleSheet("""
             QPushButton {
@@ -429,17 +445,18 @@ class CardDetailDialog(QDialog):
                 color: #e4e4e7;
                 border: 1px solid #27272a;
                 font-size: 12px;
-                font-weight: bold;
+                font-weight: 600;
                 border-radius: 6px;
-                padding: 0 14px;
+                padding: 0 12px;
             }
             QPushButton:hover { background-color: #27272a; border-color: #10b981; color: #ffffff; }
         """)
-        btn_slow.clicked.connect(lambda: tts_engine.speak_single(self.record.get("source_text", ""), lang="en", slow=True))
+        btn_slow.clicked.connect(self._speak_slow)
         btn_bar.addWidget(btn_slow)
 
+        # 📋 Türkçeyi Kopyala
         btn_copy_tr = QPushButton("📋 Türkçeyi Kopyala", self)
-        btn_copy_tr.setFixedHeight(38)
+        btn_copy_tr.setFixedHeight(36)
         btn_copy_tr.setCursor(Qt.PointingHandCursor)
         btn_copy_tr.setStyleSheet("""
             QPushButton {
@@ -456,10 +473,29 @@ class CardDetailDialog(QDialog):
         btn_copy_tr.clicked.connect(self._copy_tr)
         btn_bar.addWidget(btn_copy_tr)
 
+        # 📋 İngilizceyi Kopyala
+        btn_copy_en = QPushButton("📋 İngilizceyi Kopyala", self)
+        btn_copy_en.setFixedHeight(36)
+        btn_copy_en.setCursor(Qt.PointingHandCursor)
+        btn_copy_en.setStyleSheet("""
+            QPushButton {
+                background-color: #18181b;
+                color: #60a5fa;
+                border: 1px solid #2563eb;
+                font-size: 12px;
+                font-weight: 600;
+                border-radius: 6px;
+                padding: 0 14px;
+            }
+            QPushButton:hover { background-color: #2563eb; color: #ffffff; }
+        """)
+        btn_copy_en.clicked.connect(self._copy_en)
+        btn_bar.addWidget(btn_copy_en)
+
         btn_bar.addStretch()
 
-        btn_done = QPushButton("Tamam", self)
-        btn_done.setFixedHeight(38)
+        btn_done = QPushButton("Kapat", self)
+        btn_done.setFixedHeight(36)
         btn_done.setCursor(Qt.PointingHandCursor)
         btn_done.setStyleSheet("""
             QPushButton {
@@ -468,7 +504,7 @@ class CardDetailDialog(QDialog):
                 font-size: 12px;
                 font-weight: bold;
                 border-radius: 6px;
-                padding: 0 22px;
+                padding: 0 20px;
             }
             QPushButton:hover { background-color: #3f3f46; }
         """)
@@ -477,8 +513,42 @@ class CardDetailDialog(QDialog):
 
         layout.addLayout(btn_bar)
 
+    def _detect_source_language(self, text):
+        tr_chars = set("ğşıöüçĞŞİÖÜÇ")
+        if any(c in tr_chars for c in text):
+            return "TR"
+        words = set(re.findall(r'\b[a-zA-Z]+\b', text.lower()))
+        en_markers = {"the", "is", "are", "and", "of", "to", "in", "that", "with", "for", "on", "as", "this", "but", "it", "you", "not", "have", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "how", "when", "where", "can", "if"}
+        tr_markers = {"ve", "bir", "bu", "da", "de", "icin", "için", "ile", "cok", "çok", "daha", "gibi", "kadar", "olan", "olarak", "var", "yok", "ama", "fakat", "cunku", "çünkü", "veya", "her", "ben", "sen", "biz", "siz", "onlar", "diye", "ise", "en", "ne", "nasil", "nasıl", "ne", "olcak", "olacak", "bakalim", "bakalım", "ilerde", "şuan", "suan"}
+        if len(words.intersection(en_markers)) > len(words.intersection(tr_markers)):
+            return "EN"
+        elif len(words.intersection(tr_markers)) > len(words.intersection(en_markers)):
+            return "TR"
+        return None
+
+    def _speak_tr(self):
+        clean = re.sub(r'[/\\()\[\]]+', ', ', getattr(self, "turkish_text", "")).strip()
+        if clean:
+            tts_engine.speak_single(clean, lang="tr", slow=False)
+
+    def _speak_en(self):
+        clean = re.sub(r'[/\\()\[\]]+', ', ', getattr(self, "english_text", "")).strip()
+        if clean:
+            tts_engine.speak_single(clean, lang="en", slow=False)
+
+    def _speak_slow(self):
+        clean = re.sub(r'[/\\()\[\]]+', ', ', getattr(self, "english_text", "")).strip()
+        if clean:
+            tts_engine.speak_single(clean, lang="en", slow=True)
+
     def _copy_tr(self):
-        text = self.record.get("translated_text", "")
+        text = getattr(self, "turkish_text", "")
+        if text:
+            from PyQt5.QtWidgets import QApplication
+            QApplication.clipboard().setText(text)
+
+    def _copy_en(self):
+        text = getattr(self, "english_text", "")
         if text:
             from PyQt5.QtWidgets import QApplication
             QApplication.clipboard().setText(text)
@@ -629,38 +699,57 @@ class WordCardWidget(QFrame):
 
         main_layout.addStretch()
 
-        # 3. ALT AKSİYON BUTONLARI
+        # 3. ALT AKSİYON BUTONLARI (İki Dilli Seslendirme + Büyüt)
         btn_bar = QHBoxLayout()
-        btn_bar.setSpacing(8)
+        btn_bar.setSpacing(6)
 
-        btn_speak = QPushButton("🔊 Dinle", self)
-        btn_speak.setFixedHeight(32)
-        btn_speak.setCursor(Qt.PointingHandCursor)
-        btn_speak.setStyleSheet("""
+        btn_speak_tr = QPushButton("🇹🇷 Türkçe", self)
+        btn_speak_tr.setFixedHeight(30)
+        btn_speak_tr.setCursor(Qt.PointingHandCursor)
+        btn_speak_tr.setStyleSheet("""
             QPushButton {
-                background-color: #059669;
+                background-color: #047857;
                 color: #ffffff;
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: bold;
-                padding: 0 12px;
+                padding: 0 8px;
                 border-radius: 6px;
             }
-            QPushButton:hover { background-color: #047857; }
+            QPushButton:hover { background-color: #059669; }
         """)
-        btn_speak.clicked.connect(self._speak_normal)
-        btn_bar.addWidget(btn_speak)
+        btn_speak_tr.clicked.connect(self._speak_tr)
+        btn_bar.addWidget(btn_speak_tr)
+
+        btn_speak_en = QPushButton("🇬🇧 İngilizce", self)
+        btn_speak_en.setFixedHeight(30)
+        btn_speak_en.setCursor(Qt.PointingHandCursor)
+        btn_speak_en.setStyleSheet("""
+            QPushButton {
+                background-color: #1e3a8a;
+                color: #ffffff;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 0 8px;
+                border-radius: 6px;
+            }
+            QPushButton:hover { background-color: #2563eb; }
+        """)
+        btn_speak_en.clicked.connect(self._speak_en)
+        btn_bar.addWidget(btn_speak_en)
+
+        btn_bar.addStretch()
 
         btn_expand = QPushButton("🔍 Büyüt", self)
-        btn_expand.setFixedHeight(32)
+        btn_expand.setFixedHeight(30)
         btn_expand.setCursor(Qt.PointingHandCursor)
         btn_expand.setStyleSheet("""
             QPushButton {
                 background-color: #18181b;
                 color: #e4e4e7;
                 border: 1px solid #27272a;
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: 600;
-                padding: 0 12px;
+                padding: 0 10px;
                 border-radius: 6px;
             }
             QPushButton:hover { background-color: #27272a; border-color: #10b981; color: #ffffff; }
@@ -679,10 +768,38 @@ class WordCardWidget(QFrame):
         self.dialog.raise_()
         self.dialog.activateWindow()
 
-    def _speak_normal(self):
-        text = self.record.get("source_text", "")
-        if text:
-            tts_engine.speak_single(text, lang="en", slow=False)
+    def _detect_source_language(self, text):
+        tr_chars = set("ğşıöüçĞŞİÖÜÇ")
+        if any(c in tr_chars for c in text):
+            return "TR"
+        words = set(re.findall(r'\b[a-zA-Z]+\b', text.lower()))
+        en_markers = {"the", "is", "are", "and", "of", "to", "in", "that", "with", "for", "on", "as", "this", "but", "it", "you", "not", "have", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "how", "when", "where", "can", "if"}
+        tr_markers = {"ve", "bir", "bu", "da", "de", "icin", "için", "ile", "cok", "çok", "daha", "gibi", "kadar", "olan", "olarak", "var", "yok", "ama", "fakat", "cunku", "çünkü", "veya", "her", "ben", "sen", "biz", "siz", "onlar", "diye", "ise", "en", "ne", "nasil", "nasıl", "ne", "olcak", "olacak", "bakalim", "bakalım", "ilerde", "şuan", "suan"}
+        if len(words.intersection(en_markers)) > len(words.intersection(tr_markers)):
+            return "EN"
+        elif len(words.intersection(tr_markers)) > len(words.intersection(en_markers)):
+            return "TR"
+        return None
+
+    def _speak_tr(self):
+        source = self.record.get("source_text", "")
+        trans = self.record.get("translated_text", "")
+        ctx = self.record.get("context_type", "SELECTION")
+        is_tr = (ctx == "CHAT_OUT" or self._detect_source_language(source) == "TR")
+        tr_text = source if is_tr else trans
+        clean = re.sub(r'[/\\()\[\]]+', ', ', tr_text).strip()
+        if clean:
+            tts_engine.speak_single(clean, lang="tr", slow=False)
+
+    def _speak_en(self):
+        source = self.record.get("source_text", "")
+        trans = self.record.get("translated_text", "")
+        ctx = self.record.get("context_type", "SELECTION")
+        is_tr = (ctx == "CHAT_OUT" or self._detect_source_language(source) == "TR")
+        en_text = trans if is_tr else source
+        clean = re.sub(r'[/\\()\[\]]+', ', ', en_text).strip()
+        if clean:
+            tts_engine.speak_single(clean, lang="en", slow=False)
 
     def _toggle_fav(self):
         rec_id = self.record.get("id")
