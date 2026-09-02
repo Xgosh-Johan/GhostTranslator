@@ -1,46 +1,61 @@
 @echo off
 chcp 65001 >nul
-title Ghost Translator & AI Desktop Co-Pilot - Kurulum ve Başlatıcı
+title Ghost Translator - Kurulum ve Baslatici
 color 0A
 
-echo ======================================================================
-echo    GHOST TRANSLATOR ^& AI DESKTOP CO-PILOT - OTOMATİK KURULUM
-echo ======================================================================
+cd /d "%~dp0"
+
+echo ====================================================================
+echo     GHOST TRANSLATOR - OTOMATIK KURULUM VE BASLATICI
+echo ====================================================================
 echo.
 
-python --version >nul 2>&1
-if %errorlevel% neq 0 (
+:: Python komutunu tespit et
+set "PY_CMD="
+where py >nul 2>&1 && set "PY_CMD=py"
+if not defined PY_CMD (
+    where python >nul 2>&1 && set "PY_CMD=python"
+)
+
+if not defined PY_CMD (
     color 0C
-    echo [HATA] Bilgisayarınızda Python yüklü bulunamadı!
-    echo Lütfen https://www.python.org adresinden Python 3.9+ yükleyin.
-    echo (Yüklerken "Add Python to PATH" seçeneğini işaretlemeyi unutmayın.)
-    echo.
+    echo [HATA] Bilgisayarinizda Python kurulu bulunamadi!
+    echo Lutfen https://www.python.org adresinden Python yukleyin.
+    echo (Yuklerken "Add Python to PATH" kutucugunu isaretlemeyi unutmayin.)
     pause
     exit /b
 )
 
-echo [1/2] Gerekli Python kütüphaneleri yükleniyor (PyQt5, Edge-TTS, vb.)...
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+echo [1/2] Kutuphaneler kontrol ediliyor ve yukleniyor...
+%PY_CMD% -m pip install --upgrade pip >nul 2>&1
+%PY_CMD% -m pip install -r requirements.txt
 
 if %errorlevel% neq 0 (
     color 0C
-    echo [HATA] Kütüphaneler yüklenirken bir sorun oluştu!
+    echo [HATA] Kutuphaneler yuklenirken sorun olustu.
     pause
     exit /b
 )
 
 echo.
-echo [2/2] Ghost Translator başarıyla kuruldu! Arka planda başlatılıyor...
-start pythonw main.pyw
+echo [2/2] Ghost Translator baslatiliyor...
+
+:: Sessiz arka plan baslatma (pythonw)
+where pythonw >nul 2>&1
+if %errorlevel% equ 0 (
+    start "" pythonw main.pyw
+) else (
+    start "" %PY_CMD% main.pyw
+)
 
 echo.
-echo ======================================================================
-echo    PROGRAM AKTİF! 
-echo    - Saatin yanındaki yeşil ikondan ayarlara erişebilirsiniz.
-echo    - F8: Seçili Metni Çevir ^& Dinle
-echo    - F9: Chatte Yerinde Çeviri
-echo    - CTRL+SHIFT+S: Ekran Kırpma (OCR)
-echo ======================================================================
-timeout /t 4 >nul
+echo ====================================================================
+echo     PROGRAM AKTIF!
+echo     - Saatin yanindaki ikondan erisebilirsiniz.
+echo     - F8: Secili Metni Dinle & Anla
+echo     - F9: Chatte Yerinde Ceviri
+echo     - CTRL+SHIFT+S: Ekran Kirpma (OCR)
+echo     - CTRL+SHIFT+O: Kelime Paneli
+echo ====================================================================
+timeout /t 3 >nul
 exit
