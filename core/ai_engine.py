@@ -53,6 +53,25 @@ class AIEngine:
 
         return None, last_error
 
+    def _detect_source_language(self, text):
+        """Metnin gerçek kaynak dilini (TR / EN) deterministik olarak doğrular"""
+        tr_chars = set("ğşıöüçĞŞİÖÜÇ")
+        if any(c in tr_chars for c in text):
+            return "TR"
+
+        words = set(re.findall(r'\b[a-zA-Z]+\b', text.lower()))
+        en_markers = {"the", "is", "are", "and", "of", "to", "in", "that", "with", "for", "on", "as", "this", "but", "it", "you", "not", "have", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "how", "when", "where", "can", "if"}
+        tr_markers = {"ve", "bir", "bu", "da", "de", "icin", "için", "ile", "cok", "çok", "daha", "gibi", "kadar", "olan", "olarak", "var", "yok", "ama", "fakat", "cunku", "çünkü", "veya", "her", "ben", "sen", "biz", "siz", "onlar", "diye", "ise", "en", "ne", "nasil", "nasıl"}
+
+        en_score = len(words.intersection(en_markers))
+        tr_score = len(words.intersection(tr_markers))
+
+        if en_score > tr_score:
+            return "EN"
+        elif tr_score > en_score:
+            return "TR"
+        return None
+
     def analyze_incoming_text(self, text):
         """
         Modül A: Seçilen metni iki yönlü analiz eder.
@@ -143,7 +162,13 @@ ORNEKLER: <ornek_cumleler_veya_YOK>
             alt_match = re.search(r'ALTERNATIF:\s*(.*?)(?=\n\s*ORNEKLER:|\Z)', response_text, re.DOTALL | re.IGNORECASE)
             ex_match = re.search(r'ORNEKLER:\s*(.*?)(?=\Z)', response_text, re.DOTALL | re.IGNORECASE)
 
-            detected_lang = lang_match.group(1).strip().upper() if lang_match else "EN"
+            # Kaynak Dil Tespiti: Önce deterministik kural, yoksa Gemini çıktısı
+            forced_lang = self._detect_source_language(text)
+            if forced_lang:
+                detected_lang = forced_lang
+            else:
+                detected_lang = lang_match.group(1).strip().upper() if lang_match else "EN"
+
             phonetic = phonetic_match.group(1).strip() if phonetic_match else ""
             meaning = meaning_match.group(1).strip() if meaning_match else response_text
             recipe = recipe_match.group(1).strip() if recipe_match and "YOK" not in recipe_match.group(1).upper() else ""
