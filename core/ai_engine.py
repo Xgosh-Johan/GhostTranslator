@@ -38,7 +38,7 @@ class AIEngine:
                     }]
                 }
                 headers = {"Content-Type": "application/json"}
-                r = requests.post(url, json=payload, headers=headers, timeout=15)
+                r = requests.post(url, json=payload, headers=headers, timeout=22)
                 if r.status_code == 200:
                     data = r.json()
                     candidates = data.get("candidates", [])
@@ -56,9 +56,24 @@ class AIEngine:
     def analyze_incoming_text(self, text):
         """
         Modül A: Seçilen metni iki yönlü analiz eder.
-        Kod/Syserr hatası tespit ederse otomatik 'RECETE' üretir.
+        Uzun metinlerde gereksiz token yükünü atıp ışık hızında çevirir.
         """
-        prompt = f"""
+        is_long_text = len(text.strip()) > 350 or len(text.split()) > 40
+
+        if is_long_text:
+            prompt = f"""
+Sen profesyonel ve ultra hızlı bir çevirmensin.
+Aşağıdaki metni dikkatle oku. Eğer metin İngilizce ise Türkçeye, Türkçe ise İngilizceye tam, eksiksiz, akıcı ve kusursuz bir şekilde çevir.
+
+Girdi Metni:
+\"\"\"{text}\"\"\"
+
+Format:
+DIL: <EN veya TR>
+ANLAM: <tam_ve_eksiksiz_ceviri>
+"""
+        else:
+            prompt = f"""
 Sen geliştiriciler (C++, Python, MySQL, Metin2), oyuncular ve dil öğrenenler için çalışan ultra hızlı, iki yönlü çalışan uzman bir AI Co-Pilot ve çeviri asistanısın.
 
 Girdi Metni: "{text}"
