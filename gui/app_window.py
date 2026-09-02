@@ -167,7 +167,8 @@ class CardDetailDialog(QDialog):
         super().__init__(parent)
         self.record = dict(record) if hasattr(record, "keys") else (record or {})
         self.setWindowTitle("Çeviri Detayı ve Okuma Kartı")
-        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground, False)
         self.setFixedSize(1020, 680)
         self.drag_position = None
 
@@ -747,9 +748,11 @@ class WordCardWidget(QFrame):
 
     def _open_detail(self):
         try:
-            dlg = CardDetailDialog(self.record, None)
-            dlg.exec_()
+            self.dialog = CardDetailDialog(self.record, self.window())
+            self.dialog.exec_()
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             print(f"[Ghost] Detay açma hatası: {e}")
 
     def _detect_source_language(self, text):
