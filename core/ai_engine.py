@@ -22,7 +22,7 @@ class AIEngine:
             return None, "API Anahtarı eksik. Lütfen Ayarlar sekmesinden API anahtarınızı girin."
 
         user_model = config_manager.get("api", "gemini_model", "gemini-flash-lite-latest")
-        candidate_models = [user_model, "gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-flash-latest", "gemini-pro-latest"]
+        candidate_models = [user_model, "gemini-flash-lite-latest", "gemini-flash-latest", "gemini-2.5-flash-lite", "gemini-pro-latest"]
         seen_models = []
         for m in candidate_models:
             if m and m not in seen_models:
@@ -38,7 +38,7 @@ class AIEngine:
                     }]
                 }
                 headers = {"Content-Type": "application/json"}
-                r = requests.post(url, json=payload, headers=headers, timeout=12)
+                r = requests.post(url, json=payload, headers=headers, timeout=15)
                 if r.status_code == 200:
                     data = r.json()
                     candidates = data.get("candidates", [])
@@ -221,7 +221,7 @@ ANLAM: <hedef_dilde_ceviri>
 RECETE: <cozum_recetesi_veya_YOK>
 SES_TR: <seslendirilecek_hedef_ceviri>
 """
-            models = ["gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-flash-latest"]
+            models = ["gemini-flash-lite-latest", "gemini-flash-latest", "gemini-2.5-flash-lite"]
             for model_name in models:
                 try:
                     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
