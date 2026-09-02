@@ -1,3 +1,4 @@
 @echo off
-start pythonw main.pyw
+cd /d "%~dp0"
+start "" pythonw main.pyw
 exit
