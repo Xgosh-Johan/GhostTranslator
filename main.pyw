@@ -269,7 +269,7 @@ class GhostTranslatorService:
                 )
 
                 self.signals.show_hud_signal.emit(
-                    selected_text, f"💬 Çeviri: {english_translation}", "", "", "💬 CHAT ÇEVİRİ", "", "", ""
+                    selected_text, english_translation, "", "", "💬 TR ➔ EN (Chat)", "", "", ""
                 )
                 self.signals.refresh_history_signal.emit()
                 tts_engine.speak_single(english_translation, lang="en")

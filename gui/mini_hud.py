@@ -282,6 +282,34 @@ class MiniHUD(QWidget):
         split_layout = QHBoxLayout()
         split_layout.setSpacing(12)
 
+        scrollbar_style = """
+            QScrollArea {
+                background: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                border: none;
+                background: #141418;
+                width: 5px;
+                margin: 0px;
+                border-radius: 2px;
+            }
+            QScrollBar::handle:vertical {
+                background: #27272a;
+                min-height: 16px;
+                border-radius: 2px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #10b981;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: none;
+            }
+        """
+
         # Sol Kutu (Orijinal)
         left_box = QFrame(self.expanded_widget)
         left_box.setStyleSheet("background-color: #121216; border: 1px solid #232328; border-radius: 10px;")
@@ -294,10 +322,12 @@ class MiniHUD(QWidget):
 
         l_scroll = QScrollArea(left_box)
         l_scroll.setWidgetResizable(True)
-        l_scroll.setStyleSheet("background: transparent; border: none;")
+        l_scroll.setStyleSheet(scrollbar_style)
+        l_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.exp_src_label = QLabel("", l_scroll)
         self.exp_src_label.setStyleSheet("color: #ffffff; font-size: 15px; font-weight: 600; line-height: 1.55;")
         self.exp_src_label.setWordWrap(True)
+        self.exp_src_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.exp_src_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         l_scroll.setWidget(self.exp_src_label)
         l_lay.addWidget(l_scroll)
@@ -315,10 +345,12 @@ class MiniHUD(QWidget):
 
         r_scroll = QScrollArea(right_box)
         r_scroll.setWidgetResizable(True)
-        r_scroll.setStyleSheet("background: transparent; border: none;")
+        r_scroll.setStyleSheet(scrollbar_style)
+        r_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.exp_tr_label = QLabel("", r_scroll)
         self.exp_tr_label.setStyleSheet("color: #f4f4f5; font-size: 14px; line-height: 1.6;")
         self.exp_tr_label.setWordWrap(True)
+        self.exp_tr_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.exp_tr_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         r_scroll.setWidget(self.exp_tr_label)
         r_lay.addWidget(r_scroll)
@@ -480,6 +512,19 @@ class MiniHUD(QWidget):
         else:
             super().keyPressEvent(event)
 
+    def _detect_source_language(self, text):
+        tr_chars = set("ğşıöüçĞŞİÖÜÇ")
+        if any(c in tr_chars for c in text):
+            return "TR"
+        words = set(re.findall(r'\b[a-zA-Z]+\b', text.lower()))
+        en_markers = {"the", "is", "are", "and", "of", "to", "in", "that", "with", "for", "on", "as", "this", "but", "it", "you", "not", "have", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "how", "when", "where", "can", "if"}
+        tr_markers = {"ve", "bir", "bu", "da", "de", "icin", "için", "ile", "cok", "çok", "daha", "gibi", "kadar", "olan", "olarak", "var", "yok", "ama", "fakat", "cunku", "çünkü", "veya", "her", "ben", "sen", "biz", "siz", "onlar", "diye", "ise", "en", "ne", "nasil", "nasıl", "ne", "olcak", "olacak", "bakalim", "bakalım", "ilerde", "şuan", "suan"}
+        if len(words.intersection(en_markers)) > len(words.intersection(tr_markers)):
+            return "EN"
+        elif len(words.intersection(tr_markers)) > len(words.intersection(en_markers)):
+            return "TR"
+        return None
+
     def _on_speak_tr_clicked(self):
         text = getattr(self, "turkish_text", "") or (self.current_source if getattr(self, "detected_lang", "EN") == "TR" else self.current_meaning)
         clean = re.sub(r'[/\\()\[\]]+', ', ', text).strip()
@@ -496,7 +541,6 @@ class MiniHUD(QWidget):
         tts_engine.stop()
 
     def _on_slow_clicked(self):
-        # Varsayılan olarak hedef çeviriyi yavaş oku
         if getattr(self, "detected_lang", "EN") == "TR":
             text_to_speak = getattr(self, "english_text", self.current_meaning)
             lang = "en"
@@ -555,8 +599,19 @@ class MiniHUD(QWidget):
         else:
             self.exp_ex_card.hide()
 
+        # Akıllı Dinamik Yükseklik: Kısa cümlelerde kompakt (300px), uzunlarda geniş (560px)
+        total_len = len(self.current_source) + len(self.current_meaning)
+        if total_len < 120:
+            base_h = 300
+        elif total_len < 350:
+            base_h = 390
+        elif total_len < 800:
+            base_h = 480
+        else:
+            base_h = 560
+
         target_w = 980
-        target_h = 560 + (extra_count * 50)
+        target_h = base_h + (extra_count * 45)
         self.setFixedSize(target_w, target_h)
         self.container.setFixedSize(target_w - 20, target_h - 20)
 
@@ -602,7 +657,14 @@ class MiniHUD(QWidget):
         self.current_alternatives = alternatives
         self.current_examples = examples
         self.current_badge = badge
-        is_tr_input = ("TR ➔ EN" in badge or "TR➔EN" in badge or "TR->" in badge)
+        
+        is_tr_input = (
+            "TR ➔ EN" in badge or
+            "TR➔EN" in badge or
+            "TR->" in badge or
+            "CHAT" in badge.upper() or
+            self._detect_source_language(source_text) == "TR"
+        )
         self.detected_lang = "TR" if is_tr_input else "EN"
 
         if is_tr_input:
