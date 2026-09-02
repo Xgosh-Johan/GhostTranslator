@@ -228,17 +228,22 @@ class GhostTranslatorService:
             )
             self.signals.refresh_history_signal.emit()
 
-            # Akıllı Seslendirme Sırası
+            # Akıllı Seslendirme Sırası:
+            # Kısa cümle ve kelimelerde (<= 280 karakter) otomatik seslendir.
+            # Uzun makale/paragraflarda (> 280 karakter) kullanıcıyı rahatsız etmemek için
+            # sessiz kalır, sadece [🔊 Dinle] butonuna basıldığında tüm metni okur.
+            is_long = len(selected_text.strip()) > 280 or len(selected_text.split()) > 35
+
             if detected_lang == "TR":
-                # Türkçe seçildi -> Hedef İngilizce karşılığını Amerikan sesiyle oku
                 clean_target = speech_tr if (speech_tr and speech_tr.lower() != selected_text.lower()) else meaning
                 clean_target = re.sub(r'[/\\()\[\]]+', ', ', clean_target).strip()
-                tts_engine.speak_single(clean_target, lang="en")
+                if not is_long:
+                    tts_engine.speak_single(clean_target, lang="en")
             else:
-                # İngilizce seçildi -> Hedef Türkçe anlamı Türkçe sesiyle oku
                 clean_target = speech_tr if (speech_tr and speech_tr.lower() != selected_text.lower()) else meaning
                 clean_target = re.sub(r'[/\\()\[\]]+', ', ', clean_target).strip()
-                tts_engine.speak_single(clean_target, lang="tr")
+                if not is_long:
+                    tts_engine.speak_single(clean_target, lang="tr")
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -305,13 +310,16 @@ class GhostTranslatorService:
             self.signals.show_hud_signal.emit(source_text, meaning, phonetic, recipe, badge, "", "", "")
             self.signals.refresh_history_signal.emit()
 
+            is_long = len(source_text.strip()) > 280 or len(source_text.split()) > 35
             if detected_lang == "TR":
                 target = meaning if meaning else source_text
-                tts_engine.speak_single(target, lang="en")
+                if not is_long:
+                    tts_engine.speak_single(target, lang="en")
             else:
                 clean_target = speech_tr if (speech_tr and speech_tr.lower() != source_text.lower()) else meaning
                 clean_target = re.sub(r'[/\\()\[\]]+', ', ', clean_target).strip()
-                tts_engine.speak_single(clean_target, lang="tr")
+                if not is_long:
+                    tts_engine.speak_single(clean_target, lang="tr")
 
         threading.Thread(target=_worker, daemon=True).start()
 

@@ -89,9 +89,9 @@ class TTSEngine:
         if not clean_text:
             return None
 
-        # Çok uzun paragraflarda TTS motorunun boğulmaması için ilk 600 karakter
-        if len(clean_text) > 600:
-            clean_text = clean_text[:600]
+        # Çok uzun paragraflarda TTS motorunun boğulmaması için ilk 2500 karakter
+        if len(clean_text) > 2500:
+            clean_text = clean_text[:2500]
 
         cache_key = f"{voice}_{rate}_{clean_text}"
         if cache_key in self._audio_cache and os.path.exists(self._audio_cache[cache_key]):
