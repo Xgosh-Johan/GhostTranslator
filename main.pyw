@@ -101,8 +101,8 @@ class GhostTranslatorService:
         self.signals = AppSignals()
 
         # UI Bileşenleri
-        self.window = AppWindow()
         self.hud = MiniHUD()
+        self.window = AppWindow(hud=self.hud)
         self.snip_overlay = SnippingOverlay()
 
         # Sinyal Bağlantıları

@@ -748,15 +748,25 @@ class WordCardWidget(QFrame):
         self._open_detail()
 
     def _open_detail(self):
-        try:
-            self.dialog = CardDetailDialog(self.record)
-            self.dialog.show()
-            self.dialog.raise_()
-            self.dialog.activateWindow()
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            print(f"[Ghost] Detay açma hatası: {e}")
+        source = self.record.get("source_text", "")
+        trans = self.record.get("translated_text", "")
+        phonetic = self.record.get("phonetic", "")
+        recipe = self.record.get("explanation", "")
+        idiom = self.record.get("idiom", "")
+        alternatives = self.record.get("alternatives", "")
+        examples = self.record.get("examples", "")
+        ctx = self.record.get("context_type", "SELECTION")
+        badge = "⚡ METİN" if ctx == "SELECTION" else ("💬 CHAT" if ctx == "CHAT_OUT" else "🖼️ OCR")
+
+        win = self.window()
+        hud_obj = getattr(win, "hud", None)
+        if not hud_obj:
+            if not hasattr(self, "_hud_instance") or self._hud_instance is None:
+                from gui.mini_hud import MiniHUD
+                self._hud_instance = MiniHUD()
+            hud_obj = self._hud_instance
+
+        hud_obj.show_info(source, trans, phonetic, recipe, badge, idiom, alternatives, examples)
 
     def _detect_source_language(self, text):
         tr_chars = set("ğşıöüçĞŞİÖÜÇ")
@@ -827,8 +837,9 @@ class WordCardWidget(QFrame):
 # ANA UYGULAMA PENCERESİ
 # ==========================================
 class AppWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, hud=None):
         super().__init__()
+        self.hud = hud
         self.setWindowTitle("Ghost Translator & AI Desktop Co-Pilot")
         self.resize(1200, 850)
         self.setMinimumSize(850, 600)
