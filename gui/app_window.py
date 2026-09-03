@@ -167,7 +167,7 @@ class CardDetailDialog(QDialog):
         super().__init__(parent)
         self.record = dict(record) if hasattr(record, "keys") else (record or {})
         self.setWindowTitle("Çeviri Detayı ve Okuma Kartı")
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground, False)
         self.setFixedSize(1020, 680)
         self.drag_position = None
@@ -564,8 +564,13 @@ class CardDetailDialog(QDialog):
             self.move(event.globalPos() - self.drag_position)
             event.accept()
 
+    def closeEvent(self, event):
+        tts_engine.stop()
+        event.accept()
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
+            tts_engine.stop()
             self.close()
         else:
             super().keyPressEvent(event)
@@ -601,9 +606,9 @@ class WordCardWidget(QFrame):
         main_layout.setContentsMargins(16, 14, 16, 14)
         main_layout.setSpacing(6)
 
-        # 1. ÜST BAŞLIK VE ROZETLER
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(6)
+        # 1. ÜST BİLGİ ŞERİDİ
+        top_bar = QHBoxLayout()
+        top_bar.setSpacing(8)
 
         ctx = self.record.get("context_type", "SELECTION")
         badge_text = "⚡ METİN" if ctx == "SELECTION" else ("💬 CHAT" if ctx == "CHAT_OUT" else "🖼️ OCR")
@@ -613,32 +618,27 @@ class WordCardWidget(QFrame):
             color: #ffffff;
             font-size: 10px;
             font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 5px;
+            padding: 2px 8px;
+            border-radius: 4px;
         """)
-        header_layout.addWidget(badge)
+        top_bar.addWidget(badge)
 
-        if self.record.get("explanation"):
-            rec_badge = QLabel("🛠️ DOKTOR", self)
-            rec_badge.setStyleSheet("background-color: #d97706; color: #ffffff; font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 5px;")
-            header_layout.addWidget(rec_badge)
-
-        date_str = self.record.get("created_at", "")
-        if date_str:
+        created_at = self.record.get("created_at", "")
+        if created_at:
             try:
-                dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                dt = datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S")
                 date_str = dt.strftime("%d.%m %H:%M")
             except Exception:
-                pass
-        date_lbl = QLabel(date_str, self)
-        date_lbl.setStyleSheet("color: #71717a; font-size: 11px; font-weight: 500;")
-        header_layout.addWidget(date_lbl)
+                date_str = str(created_at)[:16]
+            time_lbl = QLabel(date_str, self)
+            time_lbl.setStyleSheet("color: #71717a; font-size: 11px;")
+            top_bar.addWidget(time_lbl)
 
-        header_layout.addStretch()
+        top_bar.addStretch()
 
         is_fav = bool(self.record.get("is_favorite", 0))
         self.btn_fav = QPushButton("⭐" if is_fav else "☆", self)
-        self.btn_fav.setFixedSize(26, 26)
+        self.btn_fav.setFixedSize(24, 24)
         self.btn_fav.setCursor(Qt.PointingHandCursor)
         self.btn_fav.setStyleSheet(f"""
             QPushButton {{
@@ -648,27 +648,28 @@ class WordCardWidget(QFrame):
                 border: none;
                 padding: 0;
             }}
-            QPushButton:hover {{ color: #f59e0b; background-color: rgba(245, 158, 11, 0.12); border-radius: 4px; }}
+            QPushButton:hover {{ color: #f59e0b; }}
         """)
         self.btn_fav.clicked.connect(self._toggle_fav)
-        header_layout.addWidget(self.btn_fav)
+        top_bar.addWidget(self.btn_fav)
 
         btn_del = QPushButton("🗑️", self)
-        btn_del.setFixedSize(26, 26)
+        btn_del.setFixedSize(24, 24)
         btn_del.setCursor(Qt.PointingHandCursor)
         btn_del.setStyleSheet("""
             QPushButton {
                 background: transparent;
-                font-size: 12px;
+                color: #71717a;
+                font-size: 13px;
                 border: none;
                 padding: 0;
             }
-            QPushButton:hover { background-color: #3f1d1d; border-radius: 4px; }
+            QPushButton:hover { color: #ef4444; }
         """)
         btn_del.clicked.connect(self._delete_self)
-        header_layout.addWidget(btn_del)
+        top_bar.addWidget(btn_del)
 
-        main_layout.addLayout(header_layout)
+        main_layout.addLayout(top_bar)
 
         # 2. İÇERİK BÖLÜMÜ
         source_text = self.record.get("source_text", "")
@@ -748,8 +749,10 @@ class WordCardWidget(QFrame):
 
     def _open_detail(self):
         try:
-            self.dialog = CardDetailDialog(self.record, self.window())
-            self.dialog.exec_()
+            self.dialog = CardDetailDialog(self.record)
+            self.dialog.show()
+            self.dialog.raise_()
+            self.dialog.activateWindow()
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -775,15 +778,22 @@ class WordCardWidget(QFrame):
         is_tr = (ctx == "CHAT_OUT" or self._detect_source_language(source) == "TR")
 
         if is_tr:
-            text = trans if trans else source
-            lang = "en"
+            en_text = trans
+            tr_text = source
         else:
-            text = trans if trans else source
-            lang = "tr"
+            en_text = source
+            tr_text = trans
 
-        clean = re.sub(r'[/\\()\[\]]+', ', ', text).strip()
-        if clean:
-            tts_engine.speak_single(clean, lang=lang, slow=False)
+        clean_en = re.sub(r'[/\\()\[\]]+', ', ', en_text).strip()
+        clean_tr = re.sub(r'[/\\()\[\]]+', ', ', tr_text).strip()
+
+        # Karttaki "Dinle" butonu hem İngilizce telaffuzu hem Türkçe anlamı sırayla eksiksiz okur!
+        if clean_en and clean_tr:
+            tts_engine.speak_bilingual(clean_en, clean_tr)
+        elif clean_en:
+            tts_engine.speak_single(clean_en, lang="en", slow=False)
+        elif clean_tr:
+            tts_engine.speak_single(clean_tr, lang="tr", slow=False)
 
     def _toggle_fav(self):
         rec_id = self.record.get("id")
